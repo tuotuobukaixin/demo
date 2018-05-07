@@ -1,0 +1,199 @@
+{
+  "access": {
+    "metadata": {
+      "roles": [
+        "9fe2ff9ee4384b1894a90878d3e92bab",
+        "f31aacfe47df4acca1c3d50463bb6a3c",
+        "42d8423df8ad418cbe444148445205c1"
+      ],
+      "is_admin": 1
+    },
+    "user": {
+      "name": "admin",
+      "roles": [
+        {
+          "name": "_member_"
+        },
+        {
+          "name": "admin"
+        },
+        {
+          "name": "heat_stack_owner"
+        }
+      ],
+      "id": "142801848c8c4ff38a98e24acfae901d",
+      "roles_links": [],
+      "username": "admin"
+    },
+    "serviceCatalog": [
+      {
+        "name": "nova",
+        "type": "compute",
+        "endpoints": [
+          {
+            "internalURL": "http:\/\/10.137.5.78:8774\/v2\/54640cf1e80945de876b9e4d5f7ae32d",
+            "id": "95e0cfffead54c5fb905def169806470",
+            "publicURL": "http:\/\/10.137.5.78:8774\/v2\/54640cf1e80945de876b9e4d5f7ae32d",
+            "region": "RegionOne",
+            "adminURL": "http:\/\/10.137.5.78:8774\/v2\/54640cf1e80945de876b9e4d5f7ae32d"
+          }
+        ],
+        "endpoints_links": []
+      },
+      {
+        "name": "novav21",
+        "type": "computev21",
+        "endpoints": [
+          {
+            "internalURL": "http:\/\/10.137.5.78:8774\/v2.1\/54640cf1e80945de876b9e4d5f7ae32d",
+            "id": "0ebf7ac3a68543c6856713f584c82af0",
+            "publicURL": "http:\/\/10.137.5.78:8774\/v2.1\/54640cf1e80945de876b9e4d5f7ae32d",
+            "region": "RegionOne",
+            "adminURL": "http:\/\/10.137.5.78:8774\/v2.1\/54640cf1e80945de876b9e4d5f7ae32d"
+          }
+        ],
+        "endpoints_links": []
+      },
+      {
+        "name": "cinderv2",
+        "type": "volumev2",
+        "endpoints": [
+          {
+            "internalURL": "http:\/\/10.137.5.78:8776\/v2\/54640cf1e80945de876b9e4d5f7ae32d",
+            "id": "58d13addea71471d98baefcceb45ce1e",
+            "publicURL": "http:\/\/10.137.5.78:8776\/v2\/54640cf1e80945de876b9e4d5f7ae32d",
+            "region": "RegionOne",
+            "adminURL": "http:\/\/10.137.5.78:8776\/v2\/54640cf1e80945de876b9e4d5f7ae32d"
+          }
+        ],
+        "endpoints_links": []
+      },
+      {
+        "name": "s3",
+        "type": "s3",
+        "endpoints": [
+          {
+            "internalURL": "http:\/\/10.137.5.78:3333",
+            "id": "728676d9b24f4ed6af78c26115345569",
+            "publicURL": "http:\/\/10.137.5.78:3333",
+            "region": "RegionOne",
+            "adminURL": "http:\/\/10.137.5.78:3333"
+          }
+        ],
+        "endpoints_links": []
+      },
+      {
+        "name": "glance",
+        "type": "image",
+        "endpoints": [
+          {
+            "internalURL": "http:\/\/10.137.5.78:9292",
+            "id": "30fdc83b2c704e0fb181fb228dfdc478",
+            "publicURL": "http:\/\/10.137.5.78:9292",
+            "region": "RegionOne",
+            "adminURL": "http:\/\/10.137.5.78:9292"
+          }
+        ],
+        "endpoints_links": []
+      },
+      {
+        "name": "ceilometer",
+        "type": "metering",
+        "endpoints": [
+          {
+            "internalURL": "http:\/\/10.137.5.78:8777\/",
+            "id": "49554b411fb3457e985a740d706e9070",
+            "publicURL": "http:\/\/10.137.5.78:8777\/",
+            "region": "RegionOne",
+            "adminURL": "http:\/\/10.137.5.78:8777\/"
+          }
+        ],
+        "endpoints_links": []
+      },
+      {
+        "name": "heat-cfn",
+        "type": "cloudformation",
+        "endpoints": [
+          {
+            "internalURL": "http:\/\/10.137.5.78:8000\/v1",
+            "id": "9a99bdbafbab42f3b1d36f02dc991ee2",
+            "publicURL": "http:\/\/10.137.5.78:8000\/v1",
+            "region": "RegionOne",
+            "adminURL": "http:\/\/10.137.5.78:8000\/v1"
+          }
+        ],
+        "endpoints_links": []
+      },
+      {
+        "name": "cinder",
+        "type": "volume",
+        "endpoints": [
+          {
+            "internalURL": "http:\/\/10.137.5.78:8776\/v1\/54640cf1e80945de876b9e4d5f7ae32d",
+            "id": "60b8a195c09d4cadb14613fe69684afb",
+            "publicURL": "http:\/\/10.137.5.78:8776\/v1\/54640cf1e80945de876b9e4d5f7ae32d",
+            "region": "RegionOne",
+            "adminURL": "http:\/\/10.137.5.78:8776\/v1\/54640cf1e80945de876b9e4d5f7ae32d"
+          }
+        ],
+        "endpoints_links": []
+      },
+      {
+        "name": "ec2",
+        "type": "ec2",
+        "endpoints": [
+          {
+            "internalURL": "http:\/\/10.137.5.78:8773\/services\/Cloud",
+            "id": "8ab31fc1ea4743adb5b0b83997cf8fae",
+            "publicURL": "http:\/\/10.137.5.78:8773\/services\/Cloud",
+            "region": "RegionOne",
+            "adminURL": "http:\/\/10.137.5.78:8773\/services\/Admin"
+          }
+        ],
+        "endpoints_links": []
+      },
+      {
+        "name": "heat",
+        "type": "orchestration",
+        "endpoints": [
+          {
+            "internalURL": "http:\/\/10.137.5.78:8004\/v1\/54640cf1e80945de876b9e4d5f7ae32d",
+            "id": "b18aa03361ca41a484e947dd45ea5de3",
+            "publicURL": "http:\/\/10.137.5.78:8004\/v1\/54640cf1e80945de876b9e4d5f7ae32d",
+            "region": "RegionOne",
+            "adminURL": "http:\/\/10.137.5.78:8004\/v1\/54640cf1e80945de876b9e4d5f7ae32d"
+          }
+        ],
+        "endpoints_links": []
+      },
+      {
+        "name": "keystone",
+        "type": "identity",
+        "endpoints": [
+          {
+            "internalURL": "http:\/\/10.137.5.78:5000\/v2.0",
+            "id": "1f443816f1a84342a90ba2385b3ce319",
+            "publicURL": "http:\/\/10.137.5.78:5000\/v2.0",
+            "region": "RegionOne",
+            "adminURL": "http:\/\/10.137.5.78:35357\/v2.0"
+          }
+        ],
+        "endpoints_links": []
+      }
+    ],
+    "token": {
+      "audit_ids": [
+        "lUUw0fPLSwO3jtUv22pSnQ"
+      ],
+      "tenant": {
+        "description": null,
+        "name": "admin",
+        "id": "54640cf1e80945de876b9e4d5f7ae32d",
+        "enabled": true
+      },
+      "id": "69bb72e549424249b1075f6a9ab4afa4",
+      "expires": "2014-12-15T06:14:32Z",
+      "issued_at": "2014-12-15T05:14:32.831553"
+    }
+  }
+}

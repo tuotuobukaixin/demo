@@ -1,0 +1,39 @@
+{
+  "alarm_actions": [
+    "http://158.85.90.245:8000/v1/signal/arn%3Aopenstack%3Aheat%3A%3A1f858a54939f464d8df6f024b0b48f9a%3Astacks%2Fa%2Ff45b413d-081e-4a9e-a1ad-48e2afa0f601%2Fresources%2Frandom_string_scaledown_policy?Timestamp=2014-12-22T23%3A11%3A22Z\u0026SignatureMethod=HmacSHA256\u0026AWSAccessKeyId=607be1b722ba4087996287883ad26aa8\u0026SignatureVersion=2\u0026Signature=%2BoSe2Df3tSn7W2NONJPNV1tAVucKPGTl1YbiW0lnCn4%3D"
+  ],
+  "alarm_id": "8b5ee570-03fe-44b9-982b-2f368df12f61",
+  "description": "Scale-down if the average CPU \u003c 15% for 10 minutes",
+  "enabled": true,
+  "insufficient_data_actions": [],
+  "name": "a-cpu_alarm_recovery-gpxpqcui3fm6",
+  "ok_actions": [],
+  "project_id": "1f858a54939f464d8df6f024b0b48f9a",
+  "repeat_actions": false,
+  "state": "insufficient data",
+  "state_timestamp": "2014-12-22T17:10:21.09296",
+  "threshold_rule": {
+    "comparison_operator": "eq",
+    "evaluation_periods": 10,
+    "exclude_outliers": false,
+    "meter_name": "instance",
+    "period": 60,
+    "query": [
+      {
+        "field": "instance_id",
+        "op": "eq",
+        "value": "a-random_string_group-yv5p46ul6krj"
+      },
+      {
+        "field": "stack_id",
+        "op": "eq",
+        "value": "f45b413d-081e-4a9e-a1ad-48e2afa0f601"
+      }
+    ],
+    "statistic": "count",
+    "threshold": 0
+  },
+  "time_constraints": [],
+  "type": "threshold",
+  "user_id": "7eda0600cd3c4c79b5c4c86bdc4ed407"
+}

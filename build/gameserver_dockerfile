@@ -1,0 +1,11 @@
+FROM ubuntu:16.04
+RUN mkdir -p /root/log
+RUN mkdir -p /root/file
+COPY ./src/gameserver/conf /root
+COPY ./src/gameserver/gameserver /root
+COPY ./start_gameserver.sh /root
+
+
+RUN chmod +x /root/start_gameserver.sh
+
+ENTRYPOINT ["/root/start_gameserver.sh"]

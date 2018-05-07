@@ -1,0 +1,10 @@
+{
+  "numbers": [
+    1,
+    2
+  ],
+  "bools": [
+    true,
+    false
+  ]
+}
