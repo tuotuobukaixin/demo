@@ -77,8 +77,8 @@ func Writefile(size int) float64 {
 	}
 	str := sb.String()
 	start := time.Now()
-	_ = os.Remove("file/file")
-	file, err := os.OpenFile("file/file", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
+	_ = os.Remove("file/" + util.Config.ServerName)
+	file, err := os.OpenFile("file/"+util.Config.ServerName, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
 	if err != nil {
 		util.LOGGER.Error("open file failed.", err)
 		return float64(0)
@@ -97,7 +97,7 @@ func Writefile(size int) float64 {
 func Readfile() float64 {
 	util.LOGGER.Info("begin read file")
 	start := time.Now()
-	file, err := os.OpenFile("file/file", os.O_RDWR, 0666)
+	file, err := os.OpenFile("file/"+util.Config.ServerName, os.O_RDWR, 0666)
 	if err != nil {
 		util.LOGGER.Error("open file failed.", err)
 		return float64(0)
@@ -168,6 +168,27 @@ func Gothread() {
 			tmp.Time = time.Now().String()
 			models.AddGameServerTestResult(&tmp)
 		}
+		results, err := models.GetGameServerResult(util.Config.ServerName)
+
+		if err == nil && len(results) >= 500 {
+			util.LOGGER.Info("begin write result")
+			WriteFile(results)
+			models.DeleteGameServer(util.Config.ServerName)
+		}
+	}
+}
+func WriteFile(results []models.GameServerTestResult) {
+	file, err := os.OpenFile("file/result-"+util.Config.ServerName, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
+	if err != nil {
+		util.LOGGER.Error("open file failed.", err)
+		return
+	}
+	defer file.Close()
+
+	for i := 0; i < len(results); i++ {
+		str := fmt.Sprintf("%s,%d,%d,%d/%d,%s\n", results[i].Name, results[i].FileReadSpeed,
+			results[i].FileWriteSpeed, results[i].Success, results[i].Total, results[i].Time)
+		file.WriteString(str)
 	}
 }
 
@@ -187,7 +208,7 @@ func GetGameserverDetail(w http.ResponseWriter, r *http.Request) {
 	}
 	var rspgameserver []models.GameServerTestResultGet
 
-	gameservers, err := models.GetGameServers()
+	gameservers, err := models.GetGameServersResult()
 	if err != nil {
 		errStr := "get gameserver failed"
 		util.LOGGER.Error(errStr, err)

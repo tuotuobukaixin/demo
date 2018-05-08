@@ -54,12 +54,12 @@ func UpdateGameServer(end *GameServerTestResult) error {
 	return err
 }
 
-func DeleteGameServer(id int) error {
+func DeleteGameServer(name string) error {
 	dao := orm.NewOrm()
 	if err := dao.Begin(); err != nil {
 		return err
 	}
-	_, err := dao.Raw("delete from game_server_test_result where  i_d = ?", id).Exec()
+	_, err := dao.Raw("delete from game_server_test_result where  name = ?", name).Exec()
 	if err == nil {
 		dao.Commit()
 	} else {
@@ -69,18 +69,18 @@ func DeleteGameServer(id int) error {
 	return err
 }
 
-func GetGameServer(name string) (*GameServerTestResult, error) {
-	var engine GameServerTestResult
+func GetGameServerResult(name string) ([]GameServerTestResult, error) {
+	var engine []GameServerTestResult
 	dao := orm.NewOrm()
 
-	err := dao.QueryTable("game_server_test_result").Filter("name", name).One(&engine)
+	_,err := dao.QueryTable("game_server_test_result").Filter("name", name).All(&engine)
 	if err != nil {
 		return nil, err
 	}
-	return &engine, nil
+	return engine, nil
 }
 
-func GetGameServers() ([]GameServerTestResult, error) {
+func GetGameServersResult() ([]GameServerTestResult, error) {
 	var engine []GameServerTestResult
 	dao := orm.NewOrm()
 

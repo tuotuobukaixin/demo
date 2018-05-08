@@ -186,6 +186,10 @@ func AddGameserver(w http.ResponseWriter, r *http.Request) {
 	eng, err := models.GetGameServer(game.Name)
 	if eng != nil {
 		game.ID = eng.ID
+		game.FileSize = eng.FileSize
+		game.FileTest = eng.FileTest
+		game.TcpNum = eng.TcpNum
+		game.TcpTest = eng.TcpTest
 		err = models.UpdateGameServer(&game)
 		if err != nil {
 			errStr := "Add quota failed"
