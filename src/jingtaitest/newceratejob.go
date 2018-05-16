@@ -14,11 +14,9 @@ import (
 	"encoding/json"
 	"strconv"
 )
+var DELETE = false
+var JOBNUM = 1
 
-var REGION = "cn-north-1"
-var CLUSTER_UUID="b8c96ab0-5461-11e8-941c-0255ac101f3e"
-var project_id="dc98b5ef5f434e99b4ade7a870d3a503"
-var resov_node="35f1eafd-54cd-11e8-9481-0255ac101f3e"
 
 
 
@@ -124,30 +122,6 @@ func DoHttpRequest(method string, requrl string, contentType string, body io.Rea
 	return data, resp.StatusCode, resp.Header, nil
 }
 
-func GetToken(usename string, domain string,password string, project_name string) (error, string) {
-	body := `{	"auth": {	"identity": {	"methods": ["password"],	"password": {	"user": {	"name": "` + usename +`",	"password": "` + password +`",	"domain": {	"name": "` + domain +`"	}	}	}	},	"scope": {	"project": {	"name": "` + project_name +`"	}	}	}}`
-	jsonBlob := []byte(body)
-
-	data := bytes.NewReader([]byte(jsonBlob))
-	router := "https://iam." + REGION + ".myhuaweicloud.com/v3/auth/tokens"
-	rsp, status_code, reshead, _ := DoHttpRequest("POST", router, "application/json;charset=utf8", data, "", "")
-	if status_code != 201 {
-		fmt.Println(string(rsp))
-		return errors.New("register failed"), ""
-	}
-	return nil, reshead["X-Subject-Token"][0]
-}
-func GetNode(clusterid string, token string,project_id string) []byte{
-	router := "https://cce." + REGION + ".myhuaweicloud.com/api/v3/projects/" + project_id + "/clusters/" + clusterid + "/nodes"
-	rsp, status_code, _, _ := DoHttpRequest("GET", router, "application/json", nil, token, "")
-	if status_code != 200 {
-		fmt.Println(string(rsp))
-		return nil
-	}
-	fmt.Println(string(rsp))
-	return rsp
-
-}
 
 func createjob(urlstring string,sfs_name string, token string,job_name string)  {
 	job :=`{	"apiVersion": "batch/v1",	"kind": "Job",	"metadata": {		"name": "`+job_name+`",
@@ -162,7 +136,7 @@ func createjob(urlstring string,sfs_name string, token string,job_name string)  
 				"containers": [{
 					"env": [{
 							"name": "TIMEOUT",
-							"value": "1800"
+							"value": "300"
 						},
 						{
 							"name": "JOB_NAME",
@@ -175,12 +149,12 @@ func createjob(urlstring string,sfs_name string, token string,job_name string)  
 					"name": "container-0",
 					"resources": {
 						"limits": {
-							"cpu": "1500m",
-							"memory": "2Gi"
+							"cpu": "330m",
+							"memory": "0.2Gi"
 						},
 						"requests": {
-							"cpu": "1500m",
-							"memory": "2Gi"
+							"cpu": "330m",
+							"memory": "0.2Gi"
 						}
 					},
 					"terminationMessagePath": "/dev/termination-log",
@@ -248,46 +222,51 @@ func DeleteJob(urlstring string, token string,job_name string) error{
 
 }
 func main() {
-	endpoint :=[]string{"https://114.116.27.140:5443","https://119.3.2.42:5443","https://139.159.163.53:5443"}
+	endpoint :=[]string{"https://114.116.27.140:5443","https://119.3.2.42:5443","https://139.159.163.53:5443","https://139.159.161.40:5443"}
 	token := []string{"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlZmF1bHQtdG9rZW4tNHZmYmMiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGVmYXVsdCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjcxNjE2MmIzLTU0NjItMTFlOC1hMGJlLWZhMTYzZWMyZWJlNiIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZWZhdWx0OmRlZmF1bHQifQ.WBZ79zAxElI1xgXQXRhUuTnfPxBnqfT08pLpjE5AwbVD7-TWbPzGfoqOcbwoZfnsmgfFlFUCksX0cXjRR6qI1Oiiaajh__dQJdfPWbXSDCavinveYF_pVss5AKXP5_FwcpiobNCLxtMU1HsYP4niiNny91hoK5Is37JZsMiLFzDpdzy56UxeNxZpdfdWLOGCNM8Pqb6rVPqgFGMZnXdskir52wlhP52dFEmMyQX8s3Chfaxzde2N_rrZ_8lDynvKABR_jrbwvvB2q-SIv8vRQeNM3BR_FtyUtBMCCSBbGPeg-APwLt5flbNlZCYqFdezer-MIfq08brn7N0VolAMBg",
-	"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlZmF1bHQtdG9rZW4tMjRiN3MiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGVmYXVsdCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6Ijk4NmYxNzFiLTU1ZDQtMTFlOC1iODZkLWZhMTYzZTM4ODA0MSIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZWZhdWx0OmRlZmF1bHQifQ.PTHrKsXyuYEjeIacGL3yATEK_t8W5ZlsNhRcX5Z3QIOi4AuAtLXU1IxIITf0keeZI83YZyN-IMl_kaK_pKTgtt1v02wi6ofpglIjBmC7udeNO44J2FjwfKAyfl7cgXavTc3HHmaVuuZDkE674g_Nj602m74nl_q2hGYlKzgnrqzMM4HVNGvMMWYAc50G2Zmw7PZFZ7f_pHfXu-gW5S_H7lQXuj7G3TY1jt9HvxH5l9lwOihRv8AMUshRsHdcRg9KT_8OgIikY2HXtgjt2oa4OpBhyGo2f3yAir3V32TUJFwFneNP5aHd-nLcj4OruGDLps9ZAbjn5gj-AzY44tQZEg",
-	"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlZmF1bHQtdG9rZW4tYnFyZmIiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGVmYXVsdCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6ImU3MzU3YmRkLTU1ZDMtMTFlOC04OTEyLWZhMTYzZWU2MGYzYiIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZWZhdWx0OmRlZmF1bHQifQ.YTc-GAWlSlEushwxo8CnUoMGAZrenhwiQkZ3FtRFftczzVhsU4W9d_NnQun0XNJ3Lb9Q5r_qTKhZ_fBcQN98dMSDsk4sLBwCaPX3BJaMrjoHpBs0wReGTjdmxY7TIhHSydAvfNzd15lnN4Tq_caMU67E8QJPNsvkAOnBljd2cUqMS7qr1F-VoL795udDUHc4yD92hvUeVbn1jPKu6mdSn2rl5-SfJuqDvSsxz14zLn9gahmrD_LMwo68RJGRZ5lvGlROtMSzWIAWjnlG3YNQm263PKdiUQHj_UJSMlhXPApdCklD8rvSo2ep0sie84ZoW4KcKK6svlVykqsDKc9mDA"}
-	pvc := []string{"cce-sfs-jh1q6m9p-iycq","cce-sfs-jh3aoacy-7fm6","cce-sfs-jh3apgcw-szn0"}
+		"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlZmF1bHQtdG9rZW4tMjRiN3MiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGVmYXVsdCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6Ijk4NmYxNzFiLTU1ZDQtMTFlOC1iODZkLWZhMTYzZTM4ODA0MSIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZWZhdWx0OmRlZmF1bHQifQ.PTHrKsXyuYEjeIacGL3yATEK_t8W5ZlsNhRcX5Z3QIOi4AuAtLXU1IxIITf0keeZI83YZyN-IMl_kaK_pKTgtt1v02wi6ofpglIjBmC7udeNO44J2FjwfKAyfl7cgXavTc3HHmaVuuZDkE674g_Nj602m74nl_q2hGYlKzgnrqzMM4HVNGvMMWYAc50G2Zmw7PZFZ7f_pHfXu-gW5S_H7lQXuj7G3TY1jt9HvxH5l9lwOihRv8AMUshRsHdcRg9KT_8OgIikY2HXtgjt2oa4OpBhyGo2f3yAir3V32TUJFwFneNP5aHd-nLcj4OruGDLps9ZAbjn5gj-AzY44tQZEg",
+		"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlZmF1bHQtdG9rZW4tYnFyZmIiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGVmYXVsdCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6ImU3MzU3YmRkLTU1ZDMtMTFlOC04OTEyLWZhMTYzZWU2MGYzYiIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZWZhdWx0OmRlZmF1bHQifQ.YTc-GAWlSlEushwxo8CnUoMGAZrenhwiQkZ3FtRFftczzVhsU4W9d_NnQun0XNJ3Lb9Q5r_qTKhZ_fBcQN98dMSDsk4sLBwCaPX3BJaMrjoHpBs0wReGTjdmxY7TIhHSydAvfNzd15lnN4Tq_caMU67E8QJPNsvkAOnBljd2cUqMS7qr1F-VoL795udDUHc4yD92hvUeVbn1jPKu6mdSn2rl5-SfJuqDvSsxz14zLn9gahmrD_LMwo68RJGRZ5lvGlROtMSzWIAWjnlG3YNQm263PKdiUQHj_UJSMlhXPApdCklD8rvSo2ep0sie84ZoW4KcKK6svlVykqsDKc9mDA",
+		"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlZmF1bHQtdG9rZW4tdmhmdHEiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGVmYXVsdCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6ImYyZjI4YzQyLTU3NDItMTFlOC05N2RkLWZhMTYzZWE3OGRhNiIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZWZhdWx0OmRlZmF1bHQifQ.t0aC0sBU1_cT73hY7baV-WxfUrMmYliPIhPnYLI7dtawAe615Z3INFyhaLPfy5xG1YKs54LirUB8dDIzD-DsUgAyEKu86nS8AQMBoTVx0qGN8xL1U6TOPvIcAzotDkUnOZRFC98-GOlwau3SwBMExuLyTqJaKqgbSKZ4Tf_gRyFd0l4QziVQRQVqsVGxD4NByBneo8_08zDlSCEulnx3OrnRpF1ZiQuxwaEZDQgNz4VfXteooNpM4xPLTGKu5RojOOsXh8pnCajOcCzhZKP_g0QumwhDhdOdvDr4TfBSGlhhwv114SfGBKtUbeR6v8g2HGVcKY7OpSXvYO2Pan7_rA"}
+	pvc := []string{"cce-sfs-jh1q6m9p-iycq","cce-sfs-jh3aoacy-7fm6","cce-sfs-jh3apgcw-szn0","cce-sfs-jh64l1s2-h86m"}
 
 
-    //for {
-		var dat map[string]interface{}
-		for index := 0 ; index < 3 ; index++ {
-			rsp := Getjob(endpoint[index], token[index])
-			json.Unmarshal(rsp, &dat)
-			if dat["items"] == nil || len(dat["items"].([]interface{})) == 0 {
-				fmt.Println(time.Now().Format("2006-01-02 15:04:05"))
-				fmt.Println("start to create job")
-				for i := 0; i < 200; i++ {
-					createjob(endpoint[index],pvc[index] ,token[index], "jobtest"+strconv.Itoa(i))
+	//for {
+	var dat map[string]interface{}
+	for index := 3 ; index < 4 ; index++ {
+		rsp := Getjob(endpoint[index], token[index])
+		json.Unmarshal(rsp, &dat)
+		if dat["items"] == nil || len(dat["items"].([]interface{})) == 0 {
+			fmt.Println(time.Now().Format("2006-01-02 15:04:05"))
+			fmt.Println("start to create job")
+			for i := 0; i < JOBNUM; i++ {
+				if !DELETE {
+					createjob(endpoint[index], pvc[index], token[index], "jobtest"+strconv.Itoa(i))
 				}
-				rsp = Getjob(endpoint[index], token[index])
-				json.Unmarshal(rsp, &dat)
 			}
-			for i := 0; i < 200; i++ {
-				//DeleteJob(endpoint[index],token[index], "jobtest"+strconv.Itoa(i))
+			rsp = Getjob(endpoint[index], token[index])
+			json.Unmarshal(rsp, &dat)
+		}
+		for i := 0; i < JOBNUM; i++ {
+			if DELETE {
+				DeleteJob(endpoint[index], token[index], "jobtest"+strconv.Itoa(i))
 			}
 		}
-		//for _, intem := range dat["items"].([]interface{}) {
-		//	_, flag1 := intem.(map[string]interface{})["status"]
-		//	if flag1 {
-		//		_, flag2 := intem.(map[string]interface{})["status"].(map[string]interface{})["conditions"]
-		//		if flag2 {
-		//			_, flag3 := intem.(map[string]interface{})["status"].(map[string]interface{})["conditions"].([]interface{})[0].(map[string]interface{})["type"]
-		//			if flag3 {
-		//				if intem.(map[string]interface{})["status"].(map[string]interface{})["conditions"].([]interface{})[0].(map[string]interface{})["type"].(string) == "Complete" {
-		//					DeleteJob("b8c96ab0-5461-11e8-941c-0255ac101f3e", token, intem.(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string))
-		//				}
-		//			}
-		//		}
-		//	}
-		//}
-		time.Sleep(10*time.Second)
+	}
+	//for _, intem := range dat["items"].([]interface{}) {
+	//	_, flag1 := intem.(map[string]interface{})["status"]
+	//	if flag1 {
+	//		_, flag2 := intem.(map[string]interface{})["status"].(map[string]interface{})["conditions"]
+	//		if flag2 {
+	//			_, flag3 := intem.(map[string]interface{})["status"].(map[string]interface{})["conditions"].([]interface{})[0].(map[string]interface{})["type"]
+	//			if flag3 {
+	//				if intem.(map[string]interface{})["status"].(map[string]interface{})["conditions"].([]interface{})[0].(map[string]interface{})["type"].(string) == "Complete" {
+	//					DeleteJob("b8c96ab0-5461-11e8-941c-0255ac101f3e", token, intem.(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string))
+	//				}
+	//			}
+	//		}
+	//	}
+	//}
+	time.Sleep(10*time.Second)
 	//}
 
 
