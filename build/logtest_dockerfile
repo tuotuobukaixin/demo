@@ -1,0 +1,9 @@
+FROM ubuntu:16.04
+RUN mkdir -p /root/log
+RUN mkdir -p /root/file
+COPY ./start_logtest.sh /root
+
+
+RUN chmod +x /root/start_logtest.sh
+
+ENTRYPOINT ["/root/start_logtest.sh"]

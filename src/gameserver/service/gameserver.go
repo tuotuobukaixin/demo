@@ -128,24 +128,26 @@ func Readfile() float64 {
 	return float64(size/1024/1024) / cost
 
 }
-func TestTCP(num int) (int, int) {
+func TestTCP(num int) (int, int, string) {
 	gss, err := rt.GetGameServers()
 	if err != nil {
-		return 0, 0
+		return 0, 0,""
 	}
 	total := len(gss)
 	success := 0
+	detail:=""
 	for i := 0; i < len(gss); i++ {
 		if gss[i].ServiceAddr != "" {
 			router := fmt.Sprintf("http://%s.default.svc.cluster.local:8088/api/v1/gameserverhealth", gss[i].Name)
-			_, status_code, _, _ := util.DoHttpRequest("GET", router, "application/json", nil, "", "")
+			rsp, status_code, _, _ := util.DoHttpRequest("GET", router, "application/json", nil, "", "")
 			if status_code == 200 {
 				success++
 			}
+			detail = string(rsp)
 		}
 
 	}
-	return success, total
+	return success, total, detail
 }
 func Gothread() {
 	for {
@@ -159,9 +161,10 @@ func Gothread() {
 			tmp.FileReadSpeed = int(readspeed)
 		}
 		if gs.TcpTest {
-			success, totol := TestTCP(gs.TcpNum)
+			success, totol,detail := TestTCP(gs.TcpNum)
 			tmp.Total = totol
 			tmp.Success = success
+			tmp.Detail = detail
 		}
 		if gs.FileTest || gs.TcpTest {
 			tmp.Name = gs.Name
@@ -186,8 +189,8 @@ func WriteFile(results []models.GameServerTestResult) {
 	defer file.Close()
 
 	for i := 0; i < len(results); i++ {
-		str := fmt.Sprintf("%s,%d,%d,%d/%d,%s\n", results[i].Name, results[i].FileReadSpeed,
-			results[i].FileWriteSpeed, results[i].Success, results[i].Total, results[i].Time)
+		str := fmt.Sprintf("%s,%d,%d,%d/%d,%s,%s\n", results[i].Name, results[i].FileReadSpeed,
+			results[i].FileWriteSpeed, results[i].Success, results[i].Total, results[i].Time, results[i].Detail)
 		file.WriteString(str)
 	}
 }

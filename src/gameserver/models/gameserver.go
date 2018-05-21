@@ -12,6 +12,7 @@ type GameServerTestResult struct {
 	FileReadSpeed  int    `orm:"size(32)"`
 	Success        int    `orm:"size(32)"`
 	Total          int    `orm:"size(32)"`
+	Detail         string `orm:"type(text);null"`
 }
 type GameServerTestResultGet struct {
 	Name           string `json:"name,omitempty"`
