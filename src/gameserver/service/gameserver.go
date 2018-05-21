@@ -15,6 +15,7 @@ import (
 	rt "registerserver/models"
 	"strings"
 	"time"
+	"strconv"
 )
 
 //ErrorRsp used to struct the error response
@@ -138,12 +139,15 @@ func TestTCP(num int) (int, int, string) {
 	detail:=""
 	for i := 0; i < len(gss); i++ {
 		if gss[i].ServiceAddr != "" {
+
 			router := fmt.Sprintf("http://%s.default.svc.cluster.local:8088/api/v1/gameserverhealth", gss[i].Name)
 			rsp, status_code, _, _ := util.DoHttpRequest("GET", router, "application/json", nil, "", "")
 			if status_code == 200 {
 				success++
+			}else {
+				detail = strconv.Itoa(status_code) + string(rsp) +";" + detail
 			}
-			detail = string(rsp)
+
 		}
 
 	}
@@ -251,5 +255,4 @@ func Health(w http.ResponseWriter, r *http.Request) {
 	}
 
 	HttpResponse(200, []byte(""), w)
-	util.LOGGER.Info("get gameserver success full")
 }
