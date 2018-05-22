@@ -7,7 +7,6 @@ import (
 	"os"
 	"internetserver/service"
 	"internetserver/util"
-	"internetserver/models"
 	"time"
 )
 
@@ -31,7 +30,7 @@ func main() {
 		os.Exit(1)
 	}
 	http.Handle("/", router)
-	models.Setup(map[string]string{"DatasourceURL": util.Config.DatasourceURL})
+
 
 	hostIP := "0.0.0.0"
 	if hostIP == "" {
@@ -39,7 +38,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	port := util.Config.Httpport
+	port := ""
 	if port == "" {
 		port = "8087"
 		util.LOGGER.Info("Listening in default port: " + port)

@@ -6,8 +6,9 @@ import (
 )
 
 type configuration struct {
-	DatasourceURL string
-	Httpport      string
+	Redisserver string
+	Num int
+
 }
 
 // The configuration structure exposed to the others to get the configuration information

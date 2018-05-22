@@ -7,14 +7,10 @@ import (
 )
 
 var rteRoutes = rata.Routes{
-	{Name: "get_gameserver", Method: "GET", Path: "/api/v1/gameserver"},
-	{Name: "add_gameserver", Method: "POST", Path: "/api/v1/gameserver"},
-	{Name: "update_gameserver", Method: "PUT", Path: "/api/v1/gameserver"},
+	{Name: "get_info", Method: "GET", Path: "/api/v1/info"},
 }
 var rteHandlers = rata.Handlers{
-	"get_gameserver":    http.HandlerFunc(GetGameserver),
-	"add_gameserver":    http.HandlerFunc(AddGameserver),
-	"update_gameserver": http.HandlerFunc(UpdateGameserver),
+	"get_info":    http.HandlerFunc(GetInfo),
 }
 
 //GetRouter return the router fo REST service

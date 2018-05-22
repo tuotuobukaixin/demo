@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"internetserver/models"
 	"internetserver/util"
 	"strings"
+	"github.com/garyburd/redigo/redis"
+	"fmt"
 )
 
 //ErrorRsp used to struct the error response
@@ -44,169 +45,60 @@ func TransferReqToInterface(r *http.Request, reqMsg interface{}) ([]byte, error)
 
 	return msg, nil
 }
+func RedisFunc() string{
+	c, err := redis.Dial("tcp", util.Config.Redisserver)
+	if err != nil {
+		util.LOGGER.Error("Connect to redis error", err)
+		fmt.Println("Connect to redis error", err)
+		return ""
+	}
+	defer c.Close()
+	is_key_exit, err := redis.Bool(c.Do("EXISTS", "mykey1"))
+	if err != nil {
+		util.LOGGER.Error("exit", err)
+		fmt.Println("exit", err)
+	}
+	if !is_key_exit {
+		_, err = c.Do("SET", "mykey", "superWang")
+		if err != nil {
+			util.LOGGER.Error("redis set failed:", err)
+			fmt.Println("redis set failed:", err)
+		}
+	}
+	username, err := redis.String(c.Do("GET", "mykey"))
+	if err != nil {
+		util.LOGGER.Error("redis get failed:", err)
+		fmt.Println("redis set failed:", err)
+	}
+	return username
 
-// OpsGetQuota get user quota
-// @Title get a quota info
-// @Router /cce/quota/ops [get]
-func GetGameserver(w http.ResponseWriter, r *http.Request) {
+}
+type Result struct {
+	Success        int    `json:"success"`
+	Total          int    `json:"total"`
+}
+func GetInfo(w http.ResponseWriter, r *http.Request) {
 
 	v := r.Header.Get("Content-Type")
 	v = strings.ToLower(v)
 	v = strings.Replace(v, " ", "", -1)
 	if v != "application/json" && v != "application/json;charset=utf-8" {
-		errStr := "get gameserver, content-Type error"
+		errStr := "get info, content-Type error"
 		util.LOGGER.Error(errStr, nil)
 		ErrorResponse(400, errStr, w)
 		return
 	}
-	var rspgameserver []models.GameServerGet
-	name := r.URL.Query().Get("name")
-	if name == "" {
+	var temp = Result{}
+	temp.Total = util.Config.Num
+	temp.Success = 0
 
-		gameservers, err := models.GetGameServers()
-		if err != nil {
-			errStr := "get gameserver failed"
-			util.LOGGER.Error(errStr, err)
-			ErrorResponse(500, errStr, w)
-			return
+	for i:=0; i<util.Config.Num; i++{
+		result := RedisFunc()
+		if result == "superWang"{
+			temp.Success ++
 		}
-		for _, gameserver := range gameservers {
-
-			var temp models.GameServerGet
-			temp.Name = gameserver.Name
-			temp.Status = gameserver.Status
-			temp.ServiceAddr = gameserver.ServiceAddr
-			rspgameserver = append(rspgameserver, temp)
-		}
-	} else {
-		gameserver, err := models.GetGameServer(name)
-		if err != nil {
-			errStr := "get gameserver failed"
-			util.LOGGER.Error(errStr, err)
-			ErrorResponse(500, errStr, w)
-			return
-		}
-		var temp models.GameServerGet
-		temp.Name = gameserver.Name
-		temp.Status = gameserver.Status
-		temp.ServiceAddr = gameserver.ServiceAddr
-		rspgameserver = append(rspgameserver, temp)
 	}
-
-	data, _ := json.Marshal(&rspgameserver)
-
+	data, _ := json.Marshal(&temp)
 	HttpResponse(200, data, w)
-	util.LOGGER.Info("get gameserver success full")
 }
 
-// OpsGetQuota get user quota
-// @Title get a quota info
-// @Router /cce/quota/ops [get]
-func UpdateGameserver(w http.ResponseWriter, r *http.Request) {
-
-	v := r.Header.Get("Content-Type")
-	v = strings.ToLower(v)
-	v = strings.Replace(v, " ", "", -1)
-	if v != "application/json" && v != "application/json;charset=utf-8" {
-		errStr := "OpsUpdateQuota, content-Type error"
-		util.LOGGER.Error(errStr, nil)
-		ErrorResponse(400, errStr, w)
-		return
-	}
-
-	gameserver := models.GameServerGet{}
-	//get request
-	_, err := TransferReqToInterface(r, &gameserver)
-	if err != nil {
-		errStr := "transfer request to interface err"
-		util.LOGGER.Error(errStr, err)
-		ErrorResponse(500, "transfer request to interface err", w)
-		return
-	}
-	if gameserver.Name != "" {
-		game, err := models.GetGameServer(gameserver.Name)
-		if err != nil {
-			errStr := "get gameserver failed"
-			util.LOGGER.Error(errStr, err)
-			ErrorResponse(500, errStr, w)
-			return
-		}
-		game.Status = gameserver.Status
-		game.ServiceAddr = gameserver.ServiceAddr
-		game.TcpTest = gameserver.TcpTest
-		game.FileSize = gameserver.FileSize
-		game.FileTest = gameserver.FileTest
-		game.TcpNum = gameserver.TcpNum
-		err = models.UpdateGameServer(game)
-		if err != nil {
-			errStr := "Update gameserver failed"
-			util.LOGGER.Error(errStr, err)
-			ErrorResponse(500, errStr, w)
-			return
-		}
-		HttpResponse(200, []byte(""), w)
-		util.LOGGER.Info("update gameserver successfully")
-	} else {
-		errStr := "name cannot be change"
-		util.LOGGER.Error(errStr, err)
-		ErrorResponse(400, errStr, w)
-		return
-	}
-
-}
-
-// OpsGetQuota get user quota
-// @Title get a quota info
-// @Router /cce/quota/ops [get]
-func AddGameserver(w http.ResponseWriter, r *http.Request) {
-
-	v := r.Header.Get("Content-Type")
-	v = strings.ToLower(v)
-	v = strings.Replace(v, " ", "", -1)
-	if v != "application/json" && v != "application/json;charset=utf-8" {
-		errStr := "OpsUpdateQuota, content-Type error"
-		util.LOGGER.Error(errStr, nil)
-		ErrorResponse(400, errStr, w)
-		return
-	}
-
-	gameserver := models.GameServerGet{}
-	//get request
-	_, err := TransferReqToInterface(r, &gameserver)
-	if err != nil {
-		errStr := "transfer request to interface err"
-		util.LOGGER.Error(errStr, err)
-		ErrorResponse(500, "transfer request to interface err", w)
-		return
-	}
-	game := models.GameServer{}
-	game.ServiceAddr = gameserver.ServiceAddr
-	game.Status = gameserver.Status
-	game.Name = gameserver.Name
-	eng, err := models.GetGameServer(game.Name)
-	if eng != nil {
-		game.ID = eng.ID
-		game.FileSize = eng.FileSize
-		game.FileTest = eng.FileTest
-		game.TcpNum = eng.TcpNum
-		game.TcpTest = eng.TcpTest
-		err = models.UpdateGameServer(&game)
-		if err != nil {
-			errStr := "Add quota failed"
-			util.LOGGER.Error(errStr, err)
-			ErrorResponse(500, errStr, w)
-			return
-		}
-	} else {
-		err = models.AddGameServer(&game)
-		if err != nil {
-			errStr := "Add quota failed"
-			util.LOGGER.Error(errStr, err)
-			ErrorResponse(500, errStr, w)
-			return
-		}
-	}
-	HttpResponse(200, []byte(""), w)
-	util.LOGGER.Info("Add gameserver successfully")
-
-}

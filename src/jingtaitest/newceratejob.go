@@ -15,7 +15,7 @@ import (
 	"strconv"
 )
 var DELETE = false
-var JOBNUM = 1
+var JOBNUM = 20000
 
 
 
@@ -136,25 +136,25 @@ func createjob(urlstring string,sfs_name string, token string,job_name string)  
 				"containers": [{
 					"env": [{
 							"name": "TIMEOUT",
-							"value": "300"
+							"value": "3600"
 						},
 						{
 							"name": "JOB_NAME",
 							"value": "`+job_name+`"
 						}
 					],
-					"image": "swr.cn-north-1.myhuaweicloud.com/jingtai/jobtest:latest",
+					"image": "swr.cn-north-1.myhuaweicloud.com/jingtai/logtest:latest",
 					"imagePullPolicy": "Always",
 					"lifecycle": {},
 					"name": "container-0",
 					"resources": {
 						"limits": {
-							"cpu": "330m",
-							"memory": "0.2Gi"
+							"cpu": "100m",
+							"memory": "0.1Gi"
 						},
 						"requests": {
-							"cpu": "330m",
-							"memory": "0.2Gi"
+							"cpu": "100m",
+							"memory": "0.1Gi"
 						}
 					},
 					"terminationMessagePath": "/dev/termination-log",
