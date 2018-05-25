@@ -141,11 +141,11 @@ func TestTCP(num int) (int, int, string) {
 		if gss[i].ServiceAddr != "" {
 
 			router := fmt.Sprintf("http://%s.default.svc.cluster.local:8088/api/v1/gameserverhealth", gss[i].Name)
-			rsp, status_code, _, _ := util.DoHttpRequest("GET", router, "application/json", nil, "", "")
+			rsp, status_code, _, err := util.DoHttpRequest("GET", router, "application/json", nil, "", "")
 			if status_code == 200 {
 				success++
 			}else {
-				detail = strconv.Itoa(status_code) + string(rsp) +";" + detail
+				detail = strconv.Itoa(status_code) + string(rsp) + err.Error()+ ";" + detail
 			}
 
 		}

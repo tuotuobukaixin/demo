@@ -1,18 +1,18 @@
-package util
+package main
 
 import (
+	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
-
 	"net/url"
 	"sync"
 	"time"
-	"io"
-	"io/ioutil"
-	"crypto/tls"
+	"flag"
+	"encoding/json"
+	"strconv"
 )
 
-var CONFIG = make(map[string]string)
-var URLINFO = make(map[int]string)
 var connectionPool = struct {
 	sync.RWMutex
 	pool map[string]*http.Client
@@ -38,8 +38,7 @@ func NewConnection(requestPath string) (httpClient *http.Client, err error) {
 func createConnection() (httpClient *http.Client, err error) {
 
 	timeout := time.Duration(30 * time.Second)
-	tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true},}
-	httpClient = &http.Client{Timeout: timeout,Transport: tr}
+	httpClient = &http.Client{Timeout: timeout}
 	return
 }
 
@@ -59,8 +58,6 @@ func GetConnection(requestPath string) (httpClient *http.Client, ok bool) {
 	ok = false
 	return
 }
-
-
 
 // DoHttpRequest send request to ops server
 func DoHttpRequest(method string, requrl string, contentType string, body io.Reader, token string, subjecttoken string) (data []byte, statusCode int, header http.Header, err error) {
@@ -109,4 +106,37 @@ func DoHttpRequest(method string, requrl string, contentType string, body io.Rea
 
 	defer resp.Body.Close()
 	return data, resp.StatusCode, resp.Header, nil
+}
+
+type Result struct {
+	Success        int    `json:"success"`
+	Total          int    `json:"total"`
+}
+func theardfuc(url string) {
+	for {
+		router := fmt.Sprintf("http://%s/api/v1/info", url)
+		date, status_code, _, err := DoHttpRequest("GET", router, "application/json", nil, "", "")
+		var tmp = Result{}
+		if status_code != 200 {
+			fmt.Println(strconv.Itoa(status_code) + " " + string(date) + " " + err.Error())
+		}else {
+			err := json.Unmarshal(date, &tmp)
+			if err != nil {
+				continue
+			}
+			if tmp.Total != tmp.Success {
+				fmt.Println(fmt.Sprintf("%d/%d", tmp.Total, tmp.Success))
+			}
+		}
+
+	}
+}
+func main() {
+	url := flag.String("url", "", "hostname")
+	num := flag.Int("num", 10, "theard num")
+	flag.Parse()
+	for a := 0; a < *num; a++ {
+		go theardfuc(*url)
+	}
+	time.Sleep(360000 * time.Hour)
 }
