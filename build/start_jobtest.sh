@@ -1,10 +1,12 @@
 #! /bin/bash
 BUILD=$(cd $(dirname $0); pwd)
-wget  https://blog.csdn.net/pkueecser/article/details/50433460
+sed -i "s|{{mysqluser}}|$mysqluser|g"  $BUILD/app.conf
+sed -i "s|{{mysqlpwd}}|$mysqlpwd|g"  $BUILD/app.conf
+sed -i "s|{{mysqlurl}}|$mysqlurl|g"  $BUILD/app.conf
+sed -i "s|{{timeout}}|$timeout|g"  $BUILD/app.conf
+sed -i "s|{{jobname}}|$jobname|g"  $BUILD/app.conf
 chmod 750 $BUILD/jobtest
-ps -ef|grep jobtest
 cd $BUILD
-nohup ./jobtest &
-sleep $TIMEOUT
-echo "test success $JOB_NAME" >> $BUILD/file/result
+./jobtest
+
 

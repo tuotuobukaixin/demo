@@ -11,12 +11,14 @@ type Job struct {
 
 
 //AddVms Add a vms record
-func AddUser(end *Job) error {
+func AddJob(name string) error {
+	var tmp = Job{}
+	tmp.Name = name
 	dao := orm.NewOrm()
 	if err := dao.Begin(); err != nil {
 		return err
 	}
-	_, err := dao.Insert(end)
+	_, err := dao.Insert(&tmp)
 	if err == nil {
 		dao.Commit()
 	} else {
@@ -26,7 +28,7 @@ func AddUser(end *Job) error {
 	return nil
 }
 
-func DeleteUser(id int) error {
+func DeleteJob(id int) error {
 	dao := orm.NewOrm()
 	if err := dao.Begin(); err != nil {
 		return err
@@ -41,7 +43,7 @@ func DeleteUser(id int) error {
 	return err
 }
 
-func GetUser(name string) (*Job, error) {
+func GetJob(name string) (*Job, error) {
 	var engine Job
 	dao := orm.NewOrm()
 
@@ -52,7 +54,7 @@ func GetUser(name string) (*Job, error) {
 	return &engine, nil
 }
 
-func GetGameUser() ([]Job, error) {
+func GetJobs() ([]Job, error) {
 	var engine []Job
 	dao := orm.NewOrm()
 

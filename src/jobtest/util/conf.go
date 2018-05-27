@@ -8,6 +8,7 @@ import (
 type configuration struct {
 	Timeout   int
 	DatasourceURL string
+	Jobname string
 }
 
 // The configuration structure exposed to the others to get the configuration information
@@ -15,7 +16,7 @@ type configuration struct {
 var Config configuration
 
 func init() {
-	content, err := ioutil.ReadFile("conf/app.conf")
+	content, err := ioutil.ReadFile("app.conf")
 	if err == nil {
 		err = json.Unmarshal(content, &Config)
 		if err != nil {
