@@ -26,8 +26,12 @@ func main() {
 	models.Setup(map[string]string{"DatasourceURL": util.Config.DatasourceURL})
 
 	go theard()
-
+	var tmp = models.Job{}
+	tmp.Name = util.Config.Jobname
+	tmp.Status = "Running"
+	models.AddJob(&tmp)
 	time.Sleep(time.Duration(util.Config.Timeout) * time.Second)
-	models.AddJob(util.Config.Jobname)
+	tmp.Status= "Success"
+	models.UpdateJob(&tmp)
 	os.Exit(0)
 }

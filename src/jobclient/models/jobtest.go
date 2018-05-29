@@ -18,13 +18,7 @@ func AddJob(end *Job) error {
 	if err := dao.Begin(); err != nil {
 		return err
 	}
-	_, err := dao.Raw("delete from job where  name = ?", end.Name).Exec()
-	if err == nil {
-		dao.Commit()
-	} else {
-		dao.Rollback()
-	}
-	_, err = dao.Insert(end)
+	_, err := dao.Insert(end)
 	if err == nil {
 		dao.Commit()
 	} else {
@@ -38,7 +32,7 @@ func UpdateJob(end *Job) error {
 	if err := dao.Begin(); err != nil {
 		return err
 	}
-	_, err := dao.Raw("update job set status = ? where  name = ?", end.Status, end.Name).Exec()
+	_, err := dao.Update(end)
 	if err == nil {
 		dao.Commit()
 	} else {
@@ -47,7 +41,7 @@ func UpdateJob(end *Job) error {
 
 	return err
 }
-func DeleteJob(id int) error {
+func DeleteJob(id int64) error {
 	dao := orm.NewOrm()
 	if err := dao.Begin(); err != nil {
 		return err
