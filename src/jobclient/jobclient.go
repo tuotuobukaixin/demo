@@ -1,6 +1,9 @@
 package main
 
 import (
+	"bytes"
+	"crypto/tls"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -8,18 +11,13 @@ import (
 	"net/url"
 	"sync"
 	"time"
-	"errors"
-	"bytes"
-	"crypto/tls"
-	"strconv"
+	//"strconv"
 	"jobclient/util"
-	"jobclient/models"
-	"encoding/json"
+	//"jobclient/models"
+	//"encoding/json"
+	"github.com/garyburd/redigo/redis"
+	"strconv"
 )
-
-
-
-
 
 var URLINFO = make(map[int]string)
 var connectionPool = struct {
@@ -47,8 +45,8 @@ func NewConnection(requestPath string) (httpClient *http.Client, err error) {
 func createConnection() (httpClient *http.Client, err error) {
 
 	timeout := time.Duration(10 * time.Second)
-	tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true},}
-	httpClient = &http.Client{Timeout: timeout,Transport: tr}
+	tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
+	httpClient = &http.Client{Timeout: timeout, Transport: tr}
 	return
 }
 
@@ -79,7 +77,7 @@ func DoHttpRequest(method string, requrl string, contentType string, body io.Rea
 
 	req.Header.Set("Content-Type", contentType)
 	if token != "" {
-		req.Header.Set("Authorization", "Bearer " +token)
+		req.Header.Set("Authorization", "Bearer "+token)
 	}
 	if clusterid != "" {
 		req.Header.Set("X-Cluster-ID", clusterid)
@@ -123,30 +121,25 @@ func DoHttpRequest(method string, requrl string, contentType string, body io.Rea
 	return data, resp.StatusCode, resp.Header, nil
 }
 
-
-func createjob(urlstring string,sfs_name string, token string,job_name string)  {
-	job :=`{	"apiVersion": "batch/v1",	"kind": "Job",	"metadata": {		"name": "`+job_name+`",
+func createjob(urlstring string, sfs_name string, token string, job_name string) {
+	job := `{	"apiVersion": "batch/v1",	"kind": "Job",	"metadata": {		"name": "` + job_name + `",
 		"namespace": "default"
 	},
 	"spec": {
 		"template": {
 			"metadata": {
-				"name": "`+job_name+`"
+				"name": "` + job_name + `"
 			},
 			"spec": {
 				"containers": [{
 					"env": [
 						{
-							"name": "mysqluser",
-							"value": "root"
+							"name": "$redis_url",
+							"value": "192.168.0.27.redis.com."
 						},
 						{
-							"name": "mysqlpwd",
-							"value": "Cloud@123"
-						},
-						{
-							"name": "mysqlurl",
-							"value": "192.168.0.145:8635"
+							"name": "$redis_port",
+							"value": "6379"
 						},
 						{
 							"name": "timeout",
@@ -154,7 +147,7 @@ func createjob(urlstring string,sfs_name string, token string,job_name string)  
 						},
 						{
 							"name": "jobname",
-							"value": "`+job_name+`"
+							"value": "` + job_name + `"
 						}
 					],
 					"image": "swr.cn-north-1.myhuaweicloud.com/cce-demo/jobtest:latest",
@@ -188,14 +181,14 @@ func createjob(urlstring string,sfs_name string, token string,job_name string)  
 }
 `
 	data := bytes.NewReader([]byte(job))
-	router :=  urlstring + "/apis/batch/v1/namespaces/default/jobs"
+	router := urlstring + "/apis/batch/v1/namespaces/default/jobs"
 	_, status_code, _, _ := DoHttpRequest("POST", router, "application/json;charset=utf8", data, token, "")
 	if status_code != 201 {
 		return
 	}
 }
 
-func Getjob(urlstring string, token string) []byte{
+func Getjob(urlstring string, token string) []byte {
 	router := urlstring + "/apis/batch/v1/namespaces/default/jobs"
 	rsp, status_code, _, _ := DoHttpRequest("GET", router, "application/json", nil, token, "")
 	if status_code != 200 {
@@ -205,7 +198,7 @@ func Getjob(urlstring string, token string) []byte{
 	return rsp
 
 }
-func DeleteJob(urlstring string, token string,job_name string) error{
+func DeleteJob(urlstring string, token string, job_name string) error {
 	body := `{
 		"kind": "DeleteOptions",
 		"apiVersion": "v1",
@@ -214,7 +207,7 @@ func DeleteJob(urlstring string, token string,job_name string) error{
 	jsonBlob := []byte(body)
 
 	data := bytes.NewReader([]byte(jsonBlob))
-	router := urlstring +"/apis/batch/v1/namespaces/default/jobs/" + job_name
+	router := urlstring + "/apis/batch/v1/namespaces/default/jobs/" + job_name
 	rsp, status_code, _, _ := DoHttpRequest("DELETE", router, "application/json", data, token, "")
 	if status_code != 200 {
 		fmt.Println(string(rsp))
@@ -223,36 +216,61 @@ func DeleteJob(urlstring string, token string,job_name string) error{
 	return nil
 
 }
-func main() {
-	endpoint :="https://192.168.0.167:5443"
-	token := "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlZmF1bHQtdG9rZW4tNHRjcHoiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGVmYXVsdCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjM4Y2M2MGQ5LTVmZTUtMTFlOC05N2Q4LWZhMTYzZWY4NzVlMCIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZWZhdWx0OmRlZmF1bHQifQ.cmtex0EHZWx6zlssyu2SHYxrgeoIMVLjBJhce0jiUFQlUdhhaGuyacJzAASrhOSH7xSIHe59naFEKYkk_9iYAgO9qa9wyxLurgsCRsiXo4RafuSsevMSfv43ggXa-TSrZ64dnVVIaVW45ITKs2HBiI7gzU4mZtGthhtwfwc5ouKdB4BxojvHxdb57IH1OU9QrkY7_PCWfNb-RpxwOqSpR5VaJqzT5tgS1YsZ-Cy8kAYMBA45GHRikgYj-hnOLq7euEtIzCCuk0Lr_QcElEpmFE6_tOFepKDNl4vnXj9D2kvsoVYnGWfnn0GOvczVFb7lkiDYvgYHXBmZ9dpFm5P1bA"
-	models.Setup(map[string]string{"DatasourceURL": util.Config.DatasourceURL})
-	var dat map[string]interface{}
-	for {
-		time.Sleep(1 * time.Second)
-		rsp := Getjob(endpoint, token)
-		json.Unmarshal(rsp, &dat)
-		jobs, err := models.GetJobs()
-		if err == nil {
-			if len(jobs) != 0 || (dat["items"] != nil && len(dat["items"].([]interface{})) != 0){
-				for index := 0; index < len(jobs); index++ {
-					if jobs[index].Status == "Success" {
-						models.DeleteJob(jobs[index].ID)
-						DeleteJob(endpoint, token, jobs[index].Name)
-						time.Sleep(1 * time.Second)
-					}
-				}
+
+func redis_get() []string {
+	var value []string
+	c, err := redis.Dial("tcp", util.Config.Redisserver)
+	if err != nil {
+		util.LOGGER.Error("Connect to redis error", err)
+		fmt.Println("Connect to redis error", err)
+		return value
+	}
+	defer c.Close()
+	len, err := redis.Int(c.Do("llen", "joblist"))
+	if err != nil {
+		util.LOGGER.Error("redis get failed:", err)
+		fmt.Println("redis set failed:", err)
+		return value
+	}
+	if len > 0 {
+		for i := 0; i < len; i++ {
+			tmp, err := redis.String(c.Do("lpop", "joblist"))
+			if err != nil {
+				util.LOGGER.Error("redis get failed:", err)
+				fmt.Println("redis set failed:", err)
 			} else {
-				fmt.Println(time.Now().Format("2006-01-02 15:04:05"))
-				for i := 0; i < util.Config.Num; i++ {
-					createjob(endpoint, "", token, "jobtest"+strconv.Itoa(i))
-				}
-				time.Sleep(60 * time.Second)
+
+				value = append(value, tmp)
 			}
 		}
 	}
+	return value
+}
+func main() {
+	endpoint := "https://192.168.0.167:5443"
+	token := "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlZmF1bHQtdG9rZW4tNHRjcHoiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGVmYXVsdCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjM4Y2M2MGQ5LTVmZTUtMTFlOC05N2Q4LWZhMTYzZWY4NzVlMCIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZWZhdWx0OmRlZmF1bHQifQ.cmtex0EHZWx6zlssyu2SHYxrgeoIMVLjBJhce0jiUFQlUdhhaGuyacJzAASrhOSH7xSIHe59naFEKYkk_9iYAgO9qa9wyxLurgsCRsiXo4RafuSsevMSfv43ggXa-TSrZ64dnVVIaVW45ITKs2HBiI7gzU4mZtGthhtwfwc5ouKdB4BxojvHxdb57IH1OU9QrkY7_PCWfNb-RpxwOqSpR5VaJqzT5tgS1YsZ-Cy8kAYMBA45GHRikgYj-hnOLq7euEtIzCCuk0Lr_QcElEpmFE6_tOFepKDNl4vnXj9D2kvsoVYnGWfnn0GOvczVFb7lkiDYvgYHXBmZ9dpFm5P1bA"
 
+	flag := false
+	jobnum := 0
+	for {
+		time.Sleep(1 * time.Second)
 
+		if flag && jobnum != util.Config.Num {
+			finish_job := redis_get()
+			for _, job_tmp := range finish_job {
+				DeleteJob(endpoint, token, job_tmp)
+				jobnum++
+				time.Sleep(1 * time.Second)
+			}
+		} else {
+			fmt.Println(time.Now().Format("2006-01-02 15:04:05"))
+			for i := 0; i < util.Config.Num; i++ {
+				createjob(endpoint, "", token, "jobtest"+strconv.Itoa(i))
+			}
+			flag = true
+			jobnum = 0
+		}
 
+	}
 
 }

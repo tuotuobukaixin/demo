@@ -7,7 +7,7 @@ import (
 
 type configuration struct {
 	Num   int
-	DatasourceURL string
+	Redisserver string
 }
 
 // The configuration structure exposed to the others to get the configuration information
