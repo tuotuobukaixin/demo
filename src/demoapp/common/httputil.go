@@ -1,4 +1,4 @@
-package util
+package common
 
 import (
 	"net/http"
@@ -8,6 +8,7 @@ import (
 	"time"
 	"io"
 	"io/ioutil"
+	"crypto/tls"
 )
 
 var CONFIG = make(map[string]string)
@@ -36,8 +37,9 @@ func NewConnection(requestPath string) (httpClient *http.Client, err error) {
 
 func createConnection() (httpClient *http.Client, err error) {
 
-	timeout := time.Duration(10 * time.Second)
-	httpClient = &http.Client{Timeout: timeout}
+	timeout := time.Duration(30 * time.Second)
+	tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true},}
+	httpClient = &http.Client{Timeout: timeout,Transport: tr}
 	return
 }
 

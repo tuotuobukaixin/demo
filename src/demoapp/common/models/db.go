@@ -10,7 +10,7 @@ import (
 
 func init() {
 	//Register Tables
-	orm.RegisterModel("mysql", new(Job))
+	orm.RegisterModel("mysql", new(GameServer))
 }
 func connect(config map[string]string) {
 	//Setup DB connection

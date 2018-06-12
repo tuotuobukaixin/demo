@@ -1,4 +1,4 @@
-package util
+package common
 
 import (
 	"paas_lager"
@@ -12,9 +12,9 @@ func init() {
 
 	paas_lager.Init(paas_lager.Config{
 		LoggerLevel:   "DEBUG",
-		LoggerFile:    "app.log",
+		LoggerFile:    "/root/log/app.log",
 		EnableRsyslog: false,
 	})
 
-	LOGGER = paas_lager.NewLogger("loginserver")
+	LOGGER = paas_lager.NewLogger("gameserver")
 }

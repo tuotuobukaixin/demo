@@ -1,4 +1,4 @@
-package util
+package conf
 
 import (
 	"encoding/json"
@@ -6,9 +6,12 @@ import (
 )
 
 type configuration struct {
-	Timeout   int
+	ServerName string
+	Registerurl string
+	ServerAddr string
+	Podip string
 	DatasourceURL string
-	Jobname string
+	Httpport      string
 }
 
 // The configuration structure exposed to the others to get the configuration information
