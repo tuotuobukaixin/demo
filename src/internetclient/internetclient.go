@@ -37,7 +37,7 @@ func NewConnection(requestPath string) (httpClient *http.Client, err error) {
 
 func createConnection() (httpClient *http.Client, err error) {
 
-	timeout := time.Duration(30 * time.Second)
+	timeout := time.Duration(60 * time.Second)
 	httpClient = &http.Client{Timeout: timeout}
 	return
 }

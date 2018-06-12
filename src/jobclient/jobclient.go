@@ -134,11 +134,11 @@ func createjob(urlstring string, sfs_name string, token string, job_name string)
 				"containers": [{
 					"env": [
 						{
-							"name": "$redis_url",
+							"name": "redis_url",
 							"value": "192.168.0.27.redis.com."
 						},
 						{
-							"name": "$redis_port",
+							"name": "redis_port",
 							"value": "6379"
 						},
 						{
@@ -182,8 +182,9 @@ func createjob(urlstring string, sfs_name string, token string, job_name string)
 `
 	data := bytes.NewReader([]byte(job))
 	router := urlstring + "/apis/batch/v1/namespaces/default/jobs"
-	_, status_code, _, _ := DoHttpRequest("POST", router, "application/json;charset=utf8", data, token, "")
+	rsp, status_code, _, _ := DoHttpRequest("POST", router, "application/json;charset=utf8", data, token, "")
 	if status_code != 201 {
+		fmt.Println(string(rsp))
 		return
 	}
 }
@@ -233,6 +234,7 @@ func redis_get() []string {
 		return value
 	}
 	if len > 0 {
+
 		for i := 0; i < len; i++ {
 			tmp, err := redis.String(c.Do("lpop", "joblist"))
 			if err != nil {
@@ -254,7 +256,6 @@ func main() {
 	jobnum := 0
 	for {
 		time.Sleep(1 * time.Second)
-
 		if flag && jobnum != util.Config.Num {
 			finish_job := redis_get()
 			for _, job_tmp := range finish_job {

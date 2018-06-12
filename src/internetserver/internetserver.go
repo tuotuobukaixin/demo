@@ -16,7 +16,7 @@ import (
 //
 
 const (
-	DefaultReadTimeout  = 5 * time.Second
+	DefaultReadTimeout  = 60 * time.Second
 	DefaultWriteTimeout = 60 * time.Second
 )
 

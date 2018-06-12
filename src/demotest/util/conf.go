@@ -9,6 +9,7 @@ type configuration struct {
 	ServerName string
 	Registerurl string
 	ServerAddr string
+	Podip string
 	DatasourceURL string
 	Httpport      string
 }
