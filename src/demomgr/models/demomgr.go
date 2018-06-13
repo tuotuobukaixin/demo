@@ -4,21 +4,23 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
-type GameServer struct {
+type DemoTest struct {
 	ID          int64  `orm:"pk;auto"`
 	Name        string `orm:"size(64)"`
 	Status      string `orm:"size(64);null"`
 	ServiceAddr string `orm:"size(64);null"`
+	Podip       string `orm:"size(64);null"`
 	FileTest    bool   `orm:"default(false)"`
 	FileSize    int    `orm:"size(32)"`
 	TcpTest     bool   `orm:"default(false)"`
 	TcpNum      int    `orm:"size(32)"`
 }
 
-type GameServerGet struct {
+type DemoTestGet struct {
 	Name        string `json:"name,omitempty"`
 	Status      string `json:"status,omitempty"`
 	ServiceAddr string `json:"addr,omitempty"`
+	Podip   string `json:"podip,omitempty"`
 	FileTest    bool   `json:"filetest,omitempty"`
 	FileSize    int    `json:"filesize,omitempty"`
 	TcpTest     bool   `json:"tcptest,omitempty"`
@@ -26,7 +28,7 @@ type GameServerGet struct {
 }
 
 //AddVms Add a vms record
-func AddGameServer(end *GameServer) error {
+func AddDemoTest(end *DemoTest) error {
 	dao := orm.NewOrm()
 	if err := dao.Begin(); err != nil {
 		return err
@@ -42,7 +44,7 @@ func AddGameServer(end *GameServer) error {
 }
 
 //UpdateRuntimeEngine Update K8sRuntime record
-func UpdateGameServer(end *GameServer) error {
+func UpdateDemoTest(end *DemoTest) error {
 	dao := orm.NewOrm()
 	if err := dao.Begin(); err != nil {
 		return err
@@ -57,12 +59,12 @@ func UpdateGameServer(end *GameServer) error {
 	return err
 }
 
-func DeleteGameServer(id int) error {
+func DeleteDemoTest(id int) error {
 	dao := orm.NewOrm()
 	if err := dao.Begin(); err != nil {
 		return err
 	}
-	_, err := dao.Raw("delete from game_server where  i_d = ?", id).Exec()
+	_, err := dao.Raw("delete from demo_test where  i_d = ?", id).Exec()
 	if err == nil {
 		dao.Commit()
 	} else {
@@ -72,22 +74,22 @@ func DeleteGameServer(id int) error {
 	return err
 }
 
-func GetGameServer(name string) (*GameServer, error) {
-	var engine GameServer
+func GetDemoTest(name string) (*DemoTest, error) {
+	var engine DemoTest
 	dao := orm.NewOrm()
 
-	err := dao.QueryTable("game_server").Filter("name", name).One(&engine)
+	err := dao.QueryTable("demo_test").Filter("name", name).One(&engine)
 	if err != nil {
 		return nil, err
 	}
 	return &engine, nil
 }
 
-func GetGameServers() ([]GameServer, error) {
-	var engine []GameServer
+func GetDemoTests() ([]DemoTest, error) {
+	var engine []DemoTest
 	dao := orm.NewOrm()
 
-	_, err := dao.QueryTable("game_server").All(&engine)
+	_, err := dao.QueryTable("demo_test").All(&engine)
 	if err != nil {
 		return nil, err
 	}

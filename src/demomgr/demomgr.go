@@ -5,9 +5,9 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	"registerserver/service"
-	"registerserver/util"
-	"registerserver/models"
+	"demomgr/service"
+	"demomgr/util"
+	"demomgr/models"
 	"time"
 )
 

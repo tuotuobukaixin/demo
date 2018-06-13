@@ -1,0 +1,13 @@
+FROM ubuntu:16.04
+RUN apt-get update
+RUN 	apt-get install net-tools -y
+RUN mkdir -p /root/log
+RUN mkdir -p /root/file
+COPY ./src/demotest/conf /root
+COPY ./src/demotest/demotest /root
+COPY ./start_demotest.sh /root
+
+
+RUN chmod +x /root/start_demotest.sh
+
+ENTRYPOINT ["/root/start_demotest.sh"]

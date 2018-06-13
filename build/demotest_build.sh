@@ -1,5 +1,5 @@
 BUILD=$(cd $(dirname $0); pwd)
-server_name=gameserver
+server_name=demotest
 source $BUILD/common.sh
 
 rm -rf $BUILD/../bin/$server_name.tgz

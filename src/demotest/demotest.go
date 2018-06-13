@@ -2,9 +2,9 @@ package main
 
 import (
 	"errors"
-	"gameserver/models"
-	"gameserver/service"
-	"gameserver/util"
+	"demotest/models"
+	"demotest/service"
+	"demotest/util"
 	"math/rand"
 	"net/http"
 	"os"
@@ -52,7 +52,7 @@ func main() {
 	}
 
 	//err = http.ListenAndServe(hostIP+":"+port, nil)
-	server := &http.Server{Addr: hostIP + ":" + port, ReadTimeout: DefaultReadTimeout, WriteTimeout: DefaultWriteTimeout}
+	server := &http.Server{Addr: "0.0.0.0:8088", ReadTimeout: DefaultReadTimeout, WriteTimeout: DefaultWriteTimeout}
 	err = server.ListenAndServe()
 	if err != nil {
 		util.LOGGER.Error("ListenAndServe", err)

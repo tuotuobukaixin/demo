@@ -1,0 +1,10 @@
+FROM ubuntu:16.04
+RUN mkdir -p /root/log
+COPY ./src/demomgr/conf /root
+COPY ./src/demomgr/demomgr /root
+COPY ./start_demomgr.sh /root
+
+
+RUN chmod +x /root/start_demomgr.sh
+
+ENTRYPOINT ["/root/start_demomgr.sh"]

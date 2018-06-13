@@ -3,7 +3,6 @@ RUN apt-get update
 RUN 	apt-get install wget -y
 RUN mkdir -p /root/log
 RUN mkdir -p /root/file
-COPY ./src/jobtest/conf /root
 COPY ./src/jobtest/jobtest /root
 COPY ./start_jobtest.sh /root
 

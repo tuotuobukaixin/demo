@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"registerserver/models"
-	"registerserver/util"
+	"demomgr/models"
+	"demomgr/util"
 	"strings"
 )
 
@@ -45,64 +45,62 @@ func TransferReqToInterface(r *http.Request, reqMsg interface{}) ([]byte, error)
 	return msg, nil
 }
 
-// OpsGetQuota get user quota
-// @Title get a quota info
-// @Router /cce/quota/ops [get]
-func GetGameserver(w http.ResponseWriter, r *http.Request) {
+
+func GetDemoTest(w http.ResponseWriter, r *http.Request) {
 
 	v := r.Header.Get("Content-Type")
 	v = strings.ToLower(v)
 	v = strings.Replace(v, " ", "", -1)
 	if v != "application/json" && v != "application/json;charset=utf-8" {
-		errStr := "get gameserver, content-Type error"
+		errStr := "get demotest, content-Type error"
 		util.LOGGER.Error(errStr, nil)
 		ErrorResponse(400, errStr, w)
 		return
 	}
-	var rspgameserver []models.GameServerGet
+	var rspdemotest []models.DemoTestGet
 	name := r.URL.Query().Get("name")
 	if name == "" {
 
-		gameservers, err := models.GetGameServers()
+		demotests, err := models.GetDemoTests()
 		if err != nil {
-			errStr := "get gameserver failed"
+			errStr := "get demotest failed"
 			util.LOGGER.Error(errStr, err)
 			ErrorResponse(500, errStr, w)
 			return
 		}
-		for _, gameserver := range gameservers {
+		for _, demotest := range demotests {
 
-			var temp models.GameServerGet
-			temp.Name = gameserver.Name
-			temp.Status = gameserver.Status
-			temp.ServiceAddr = gameserver.ServiceAddr
-			rspgameserver = append(rspgameserver, temp)
+			var temp models.DemoTestGet
+			temp.Name = demotest.Name
+			temp.Status = demotest.Status
+			temp.ServiceAddr = demotest.ServiceAddr
+			rspdemotest = append(rspdemotest, temp)
 		}
 	} else {
-		gameserver, err := models.GetGameServer(name)
+		demotest, err := models.GetDemoTest(name)
 		if err != nil {
-			errStr := "get gameserver failed"
+			errStr := "get demotest failed"
 			util.LOGGER.Error(errStr, err)
 			ErrorResponse(500, errStr, w)
 			return
 		}
-		var temp models.GameServerGet
-		temp.Name = gameserver.Name
-		temp.Status = gameserver.Status
-		temp.ServiceAddr = gameserver.ServiceAddr
-		rspgameserver = append(rspgameserver, temp)
+		var temp models.DemoTestGet
+		temp.Name = demotest.Name
+		temp.Status = demotest.Status
+		temp.ServiceAddr = demotest.ServiceAddr
+		rspdemotest = append(rspdemotest, temp)
 	}
 
-	data, _ := json.Marshal(&rspgameserver)
+	data, _ := json.Marshal(&rspdemotest)
 
 	HttpResponse(200, data, w)
-	util.LOGGER.Info("get gameserver success full")
+	util.LOGGER.Info("get demotest success full")
 }
 
 // OpsGetQuota get user quota
 // @Title get a quota info
 // @Router /cce/quota/ops [get]
-func UpdateGameserver(w http.ResponseWriter, r *http.Request) {
+func UpdateDemoTest(w http.ResponseWriter, r *http.Request) {
 
 	v := r.Header.Get("Content-Type")
 	v = strings.ToLower(v)
@@ -114,38 +112,38 @@ func UpdateGameserver(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gameserver := models.GameServerGet{}
+	demotest := models.DemoTestGet{}
 	//get request
-	_, err := TransferReqToInterface(r, &gameserver)
+	_, err := TransferReqToInterface(r, &demotest)
 	if err != nil {
 		errStr := "transfer request to interface err"
 		util.LOGGER.Error(errStr, err)
 		ErrorResponse(500, "transfer request to interface err", w)
 		return
 	}
-	if gameserver.Name != "" {
-		game, err := models.GetGameServer(gameserver.Name)
+	if demotest.Name != "" {
+		game, err := models.GetDemoTest(demotest.Name)
 		if err != nil {
-			errStr := "get gameserver failed"
+			errStr := "get demotest failed"
 			util.LOGGER.Error(errStr, err)
 			ErrorResponse(500, errStr, w)
 			return
 		}
-		game.Status = gameserver.Status
-		game.ServiceAddr = gameserver.ServiceAddr
-		game.TcpTest = gameserver.TcpTest
-		game.FileSize = gameserver.FileSize
-		game.FileTest = gameserver.FileTest
-		game.TcpNum = gameserver.TcpNum
-		err = models.UpdateGameServer(game)
+		game.Status = demotest.Status
+		game.ServiceAddr = demotest.ServiceAddr
+		game.TcpTest = demotest.TcpTest
+		game.FileSize = demotest.FileSize
+		game.FileTest = demotest.FileTest
+		game.TcpNum = demotest.TcpNum
+		err = models.UpdateDemoTest(game)
 		if err != nil {
-			errStr := "Update gameserver failed"
+			errStr := "Update demotest failed"
 			util.LOGGER.Error(errStr, err)
 			ErrorResponse(500, errStr, w)
 			return
 		}
 		HttpResponse(200, []byte(""), w)
-		util.LOGGER.Info("update gameserver successfully")
+		util.LOGGER.Info("update demotest successfully")
 	} else {
 		errStr := "name cannot be change"
 		util.LOGGER.Error(errStr, err)
@@ -158,7 +156,7 @@ func UpdateGameserver(w http.ResponseWriter, r *http.Request) {
 // OpsGetQuota get user quota
 // @Title get a quota info
 // @Router /cce/quota/ops [get]
-func AddGameserver(w http.ResponseWriter, r *http.Request) {
+func AddDemoTest(w http.ResponseWriter, r *http.Request) {
 
 	v := r.Header.Get("Content-Type")
 	v = strings.ToLower(v)
@@ -170,27 +168,28 @@ func AddGameserver(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gameserver := models.GameServerGet{}
+	demotest := models.DemoTestGet{}
 	//get request
-	_, err := TransferReqToInterface(r, &gameserver)
+	_, err := TransferReqToInterface(r, &demotest)
 	if err != nil {
 		errStr := "transfer request to interface err"
 		util.LOGGER.Error(errStr, err)
 		ErrorResponse(500, "transfer request to interface err", w)
 		return
 	}
-	game := models.GameServer{}
-	game.ServiceAddr = gameserver.ServiceAddr
-	game.Status = gameserver.Status
-	game.Name = gameserver.Name
-	eng, err := models.GetGameServer(game.Name)
+	game := models.DemoTest{}
+	game.ServiceAddr = demotest.ServiceAddr
+	game.Status = demotest.Status
+	game.Name = demotest.Name
+	game.Podip = demotest.Podip
+	eng, err := models.GetDemoTest(game.Name)
 	if eng != nil {
 		game.ID = eng.ID
 		game.FileSize = eng.FileSize
 		game.FileTest = eng.FileTest
 		game.TcpNum = eng.TcpNum
 		game.TcpTest = eng.TcpTest
-		err = models.UpdateGameServer(&game)
+		err = models.UpdateDemoTest(&game)
 		if err != nil {
 			errStr := "Add quota failed"
 			util.LOGGER.Error(errStr, err)
@@ -198,7 +197,7 @@ func AddGameserver(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		err = models.AddGameServer(&game)
+		err = models.AddDemoTest(&game)
 		if err != nil {
 			errStr := "Add quota failed"
 			util.LOGGER.Error(errStr, err)
@@ -207,6 +206,6 @@ func AddGameserver(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	HttpResponse(200, []byte(""), w)
-	util.LOGGER.Info("Add gameserver successfully")
+	util.LOGGER.Info("Add demotest successfully")
 
 }

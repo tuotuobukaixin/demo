@@ -1,5 +1,5 @@
 BUILD=$(cd $(dirname $0); pwd)
-server_name=registerserver
+server_name=demomgr
 source $BUILD/common.sh
 
 rm -rf $BUILD/../bin/$server_name.tgz

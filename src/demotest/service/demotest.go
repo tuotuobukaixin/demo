@@ -6,13 +6,13 @@ import (
 	"errors"
 	"fmt"
 
-	"gameserver/models"
-	"gameserver/util"
+	"demotest/models"
+	"demotest/util"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
-	rt "registerserver/models"
+	rt "demomgr/models"
 	"strings"
 	"time"
 	"strconv"
@@ -54,16 +54,17 @@ func TransferReqToInterface(r *http.Request, reqMsg interface{}) ([]byte, error)
 	return msg, nil
 }
 func RegisterGameserver() error {
-	var temp = rt.GameServerGet{}
+	var temp = rt.DemoTestGet{}
 	temp.Name = util.Config.ServerName
 	temp.ServiceAddr = util.Config.ServerAddr
+	temp.Podip = util.Config.Podip
 	temp.Status = "Running"
 	reqInfo, err := json.Marshal(temp)
 	if err != nil {
 		return err
 	}
 	data := bytes.NewReader([]byte(reqInfo))
-	router := util.Config.Registerurl + "/api/v1/gameserver"
+	router := util.Config.Registerurl + "/api/v1/demotest"
 	_, status_code, _, _ := util.DoHttpRequest("POST", router, "application/json", data, "", "")
 	if status_code != 200 {
 		return errors.New("register failed")
@@ -130,7 +131,7 @@ func Readfile() float64 {
 
 }
 func TestTCP(num int) (int, int, string) {
-	gss, err := rt.GetGameServers()
+	gss, err := rt.GetDemoTests()
 	if err != nil {
 		return 0, 0,""
 	}
@@ -140,8 +141,15 @@ func TestTCP(num int) (int, int, string) {
 	for i := 0; i < len(gss); i++ {
 		if gss[i].ServiceAddr != "" {
 
-			router := fmt.Sprintf("http://%s.default.svc.cluster.local:8088/api/v1/gameserverhealth", gss[i].Name)
+			router := fmt.Sprintf("http://%s.default.svc.cluster.local:8088/api/v1/demotesthealth", gss[i].Name)
 			rsp, status_code, _, err := util.DoHttpRequest("GET", router, "application/json", nil, "", "")
+			if status_code == 200 {
+				success++
+			}else {
+				detail = strconv.Itoa(status_code) + string(rsp) + err.Error()+ ";" + detail
+			}
+			router = fmt.Sprintf("http://%s:8088/api/v1/demotesthealth", gss[i].Podip)
+			rsp, status_code, _, err = util.DoHttpRequest("GET", router, "application/json", nil, "", "")
 			if status_code == 200 {
 				success++
 			}else {
@@ -151,13 +159,13 @@ func TestTCP(num int) (int, int, string) {
 		}
 
 	}
-	return success, total, detail
+	return success, total * 2, detail
 }
 func Gothread() {
 	for {
 		time.Sleep(10 * time.Second)
-		var tmp models.GameServerTestResult
-		gs, _ := rt.GetGameServer(util.Config.ServerName)
+		var tmp models.DemoTestTestResult
+		gs, _ := rt.GetDemoTest(util.Config.ServerName)
 		if gs.FileTest {
 			writespeed := Writefile(gs.FileSize)
 			tmp.FileWriteSpeed = int(writespeed)
@@ -173,18 +181,18 @@ func Gothread() {
 		if gs.FileTest || gs.TcpTest {
 			tmp.Name = gs.Name
 			tmp.Time = time.Now().String()
-			models.AddGameServerTestResult(&tmp)
+			models.AddDemoTestTestResult(&tmp)
 		}
-		results, err := models.GetGameServerResult(util.Config.ServerName)
+		results, err := models.GetDemoTestResult(util.Config.ServerName)
 
 		if err == nil && len(results) >= 500 {
 			util.LOGGER.Info("begin write result")
 			WriteFile(results)
-			models.DeleteGameServer(util.Config.ServerName)
+			models.DeleteDemoTest(util.Config.ServerName)
 		}
 	}
 }
-func WriteFile(results []models.GameServerTestResult) {
+func WriteFile(results []models.DemoTestTestResult) {
 	file, err := os.OpenFile("file/result-"+util.Config.ServerName, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
 	if err != nil {
 		util.LOGGER.Error("open file failed.", err)
@@ -208,35 +216,35 @@ func GetGameserverDetail(w http.ResponseWriter, r *http.Request) {
 	v = strings.ToLower(v)
 	v = strings.Replace(v, " ", "", -1)
 	if v != "application/json" && v != "application/json;charset=utf-8" {
-		errStr := "get gameserver, content-Type error"
+		errStr := "get demotest, content-Type error"
 		util.LOGGER.Error(errStr, nil)
 		ErrorResponse(400, errStr, w)
 		return
 	}
-	var rspgameserver []models.GameServerTestResultGet
+	var rspdemotest []models.DemoTestTestResultGet
 
-	gameservers, err := models.GetGameServersResult()
+	demotests, err := models.GetDemoTestsResult()
 	if err != nil {
-		errStr := "get gameserver failed"
+		errStr := "get demotest failed"
 		util.LOGGER.Error(errStr, err)
 		ErrorResponse(500, errStr, w)
 		return
 	}
-	for _, gameserver := range gameservers {
+	for _, demotest := range demotests {
 
-		var temp models.GameServerTestResultGet
-		temp.Time = gameserver.Time
-		temp.FileReadSpeed = gameserver.FileReadSpeed
-		temp.FileWriteSpeed = gameserver.FileWriteSpeed
-		temp.Success = gameserver.Success
-		temp.Total = gameserver.Total
-		rspgameserver = append(rspgameserver, temp)
+		var temp models.DemoTestTestResultGet
+		temp.Time = demotest.Time
+		temp.FileReadSpeed = demotest.FileReadSpeed
+		temp.FileWriteSpeed = demotest.FileWriteSpeed
+		temp.Success = demotest.Success
+		temp.Total = demotest.Total
+		rspdemotest = append(rspdemotest, temp)
 	}
 
-	data, _ := json.Marshal(&rspgameserver)
+	data, _ := json.Marshal(&rspdemotest)
 
 	HttpResponse(200, data, w)
-	util.LOGGER.Info("get gameserver success full")
+	util.LOGGER.Info("get demotest success full")
 }
 
 // OpsGetQuota get user quota
@@ -248,7 +256,7 @@ func Health(w http.ResponseWriter, r *http.Request) {
 	v = strings.ToLower(v)
 	v = strings.Replace(v, " ", "", -1)
 	if v != "application/json" && v != "application/json;charset=utf-8" {
-		errStr := "get gameserver, content-Type error"
+		errStr := "get demotest, content-Type error"
 		util.LOGGER.Error(errStr, nil)
 		ErrorResponse(400, errStr, w)
 		return

@@ -12,9 +12,9 @@ func init() {
 
 	paas_lager.Init(paas_lager.Config{
 		LoggerLevel:   "DEBUG",
-		LoggerFile:    "/root/log/app.log",
+		LoggerFile:    "app.log",
 		EnableRsyslog: false,
 	})
 
-	LOGGER = paas_lager.NewLogger("gameserver")
+	LOGGER = paas_lager.NewLogger("DemoTest")
 }

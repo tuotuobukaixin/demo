@@ -4,7 +4,7 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
-type GameServerTestResult struct {
+type DemoTestTestResult struct {
 	ID             int64  `orm:"pk;auto"`
 	Name           string `orm:"size(64)"`
 	Time           string `orm:"size(64)"`
@@ -14,7 +14,7 @@ type GameServerTestResult struct {
 	Total          int    `orm:"size(32)"`
 	Detail         string `orm:"type(text);null"`
 }
-type GameServerTestResultGet struct {
+type DemoTestTestResultGet struct {
 	Name           string `json:"name,omitempty"`
 	Time           string `json:"time,omitempty"`
 	FileWriteSpeed int    `json:"writespeed,omitempty"`
@@ -24,7 +24,7 @@ type GameServerTestResultGet struct {
 }
 
 //AddVms Add a vms record
-func AddGameServerTestResult(end *GameServerTestResult) error {
+func AddDemoTestTestResult(end *DemoTestTestResult) error {
 	dao := orm.NewOrm()
 	if err := dao.Begin(); err != nil {
 		return err
@@ -40,7 +40,7 @@ func AddGameServerTestResult(end *GameServerTestResult) error {
 }
 
 //UpdateRuntimeEngine Update K8sRuntime record
-func UpdateGameServer(end *GameServerTestResult) error {
+func UpdateDemoTest(end *DemoTestTestResult) error {
 	dao := orm.NewOrm()
 	if err := dao.Begin(); err != nil {
 		return err
@@ -55,12 +55,12 @@ func UpdateGameServer(end *GameServerTestResult) error {
 	return err
 }
 
-func DeleteGameServer(name string) error {
+func DeleteDemoTest(name string) error {
 	dao := orm.NewOrm()
 	if err := dao.Begin(); err != nil {
 		return err
 	}
-	_, err := dao.Raw("delete from game_server_test_result where  name = ?", name).Exec()
+	_, err := dao.Raw("delete from demo_test_test_result where  name = ?", name).Exec()
 	if err == nil {
 		dao.Commit()
 	} else {
@@ -70,22 +70,22 @@ func DeleteGameServer(name string) error {
 	return err
 }
 
-func GetGameServerResult(name string) ([]GameServerTestResult, error) {
-	var engine []GameServerTestResult
+func GetDemoTestResult(name string) ([]DemoTestTestResult, error) {
+	var engine []DemoTestTestResult
 	dao := orm.NewOrm()
 
-	_,err := dao.QueryTable("game_server_test_result").Filter("name", name).All(&engine)
+	_,err := dao.QueryTable("demo_test_test_result").Filter("name", name).All(&engine)
 	if err != nil {
 		return nil, err
 	}
 	return engine, nil
 }
 
-func GetGameServersResult() ([]GameServerTestResult, error) {
-	var engine []GameServerTestResult
+func GetDemoTestsResult() ([]DemoTestTestResult, error) {
+	var engine []DemoTestTestResult
 	dao := orm.NewOrm()
 
-	_, err := dao.QueryTable("game_server_test_result").All(&engine)
+	_, err := dao.QueryTable("demo_test_test_result").All(&engine)
 	if err != nil {
 		return nil, err
 	}

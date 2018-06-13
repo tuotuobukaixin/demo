@@ -7,18 +7,17 @@ import (
 )
 
 var rteRoutes = rata.Routes{
-	{Name: "get_gameserver", Method: "GET", Path: "/api/v1/gameserver"},
-	{Name: "add_gameserver", Method: "POST", Path: "/api/v1/gameserver"},
-	{Name: "update_gameserver", Method: "PUT", Path: "/api/v1/gameserver"},
+	{Name: "get_demotest", Method: "GET", Path: "/api/v1/demotest"},
+	{Name: "add_demotest", Method: "POST", Path: "/api/v1/demotest"},
+	{Name: "update_demotest", Method: "PUT", Path: "/api/v1/demotest"},
 }
 var rteHandlers = rata.Handlers{
-	"get_gameserver":    http.HandlerFunc(GetGameserver),
-	"add_gameserver":    http.HandlerFunc(AddGameserver),
-	"update_gameserver": http.HandlerFunc(UpdateGameserver),
+	"get_demotest":    http.HandlerFunc(GetDemoTest),
+	"add_demotest":    http.HandlerFunc(AddDemoTest),
+	"update_demotest": http.HandlerFunc(UpdateDemoTest),
 }
 
-//GetRouter return the router fo REST service
-// @SubApi k8s-runtime API [/k8sruntime]
+
 func GetRouter() (router http.Handler, err error) {
 	router, err = rata.NewRouter(rteRoutes, rteHandlers)
 	return
