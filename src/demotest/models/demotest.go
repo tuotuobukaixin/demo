@@ -5,22 +5,21 @@ import (
 )
 
 type DemoTestTestResult struct {
-	ID             int64  `orm:"pk;auto"`
-	Name           string `orm:"size(64)"`
-	Time           string `orm:"size(64)"`
-	FileWriteSpeed int    `orm:"size(32)"`
-	FileReadSpeed  int    `orm:"size(32)"`
-	Success        int    `orm:"size(32)"`
-	Total          int    `orm:"size(32)"`
-	Detail         string `orm:"type(text);null"`
+	ID              int64  `orm:"pk;auto"`
+	Name            string `orm:"size(64)"`
+	Time            string `orm:"size(64)"`
+	FileWriteSpeed  int    `orm:"size(32)"`
+	FileReadSpeed   int    `orm:"size(32)"`
+	Success         int    `orm:"size(32)"`
+	Total           int    `orm:"size(32)"`
+	DownFileTime    int    `orm:"size(32)"`
+	DownFileSuccess bool   `orm:"default(false)"`
+	Detail          string `orm:"type(text);null"`
 }
-type DemoTestTestResultGet struct {
-	Name           string `json:"name,omitempty"`
-	Time           string `json:"time,omitempty"`
-	FileWriteSpeed int    `json:"writespeed,omitempty"`
-	FileReadSpeed  int    `json:"readspeed,omitempty"`
-	Success        int    `json:"success,omitempty"`
-	Total          int    `json:"total,omitempty"`
+type DemoTestGet struct {
+	Name     string `json:"name,omitempty"`
+	PodIP    string `json:"podip,omitempty"`
+	Dnataddr string `json:"dnataddr,omitempty"`
 }
 
 //AddVms Add a vms record
@@ -74,7 +73,7 @@ func GetDemoTestResult(name string) ([]DemoTestTestResult, error) {
 	var engine []DemoTestTestResult
 	dao := orm.NewOrm()
 
-	_,err := dao.QueryTable("demo_test_test_result").Filter("name", name).All(&engine)
+	_, err := dao.QueryTable("demo_test_test_result").Filter("name", name).All(&engine)
 	if err != nil {
 		return nil, err
 	}

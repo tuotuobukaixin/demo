@@ -12,4 +12,7 @@ sed -i "s|{{database}}|$database|g"  $BUILD/app.conf
 chmod 750 $BUILD/demotest
 ps -ef|grep demotest
 cd $BUILD
+if [ "$debug" == "true" ]; then
+    sleep 3600
+fi
 ./demotest

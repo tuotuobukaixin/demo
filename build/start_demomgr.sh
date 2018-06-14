@@ -8,4 +8,7 @@ sed -i "s|{{database}}|$database|g"  $BUILD/app.conf
 chmod 750 $BUILD/demomgr
 ps -ef|grep demomgr
 cd $BUILD
+if [ "$debug" == "true" ]; then
+    sleep 3600
+fi
 ./demomgr

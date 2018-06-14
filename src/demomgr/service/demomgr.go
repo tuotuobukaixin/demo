@@ -74,6 +74,12 @@ func GetDemoTest(w http.ResponseWriter, r *http.Request) {
 			temp.Name = demotest.Name
 			temp.Status = demotest.Status
 			temp.ServiceAddr = demotest.ServiceAddr
+			temp.TcpTest = demotest.TcpTest
+			temp.FileTest = demotest.FileTest
+			temp.FileSize = demotest.FileSize
+			temp.DownFile = demotest.DownFile
+			temp.DownFileSum = demotest.DownFileSum
+			temp.DownFileUrl = demotest.DownFileUrl
 			rspdemotest = append(rspdemotest, temp)
 		}
 	} else {
@@ -88,6 +94,12 @@ func GetDemoTest(w http.ResponseWriter, r *http.Request) {
 		temp.Name = demotest.Name
 		temp.Status = demotest.Status
 		temp.ServiceAddr = demotest.ServiceAddr
+		temp.TcpTest = demotest.TcpTest
+		temp.FileTest = demotest.FileTest
+		temp.FileSize = demotest.FileSize
+		temp.DownFile = demotest.DownFile
+		temp.DownFileSum = demotest.DownFileSum
+		temp.DownFileUrl = demotest.DownFileUrl
 		rspdemotest = append(rspdemotest, temp)
 	}
 
@@ -134,7 +146,9 @@ func UpdateDemoTest(w http.ResponseWriter, r *http.Request) {
 		game.TcpTest = demotest.TcpTest
 		game.FileSize = demotest.FileSize
 		game.FileTest = demotest.FileTest
-		game.TcpNum = demotest.TcpNum
+		game.DownFile = demotest.DownFile
+		game.DownFileSum = demotest.DownFileSum
+		game.DownFileUrl = demotest.DownFileUrl
 		err = models.UpdateDemoTest(game)
 		if err != nil {
 			errStr := "Update demotest failed"
@@ -187,8 +201,10 @@ func AddDemoTest(w http.ResponseWriter, r *http.Request) {
 		game.ID = eng.ID
 		game.FileSize = eng.FileSize
 		game.FileTest = eng.FileTest
-		game.TcpNum = eng.TcpNum
+		game.DownFile = eng.DownFile
 		game.TcpTest = eng.TcpTest
+		game.DownFileSum = eng.DownFileSum
+		game.DownFileUrl = eng.DownFileUrl
 		err = models.UpdateDemoTest(&game)
 		if err != nil {
 			errStr := "Add quota failed"

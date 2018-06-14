@@ -2,8 +2,8 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   annotations:
-    service.protal.kubernetes.io/access-ip: {{EIP}}:{{port}}
-    service.protal.kubernetes.io/type: EIP
+    service.protal.kubernetes.io/access-ip: {{dnatip}}:{{port}}
+    service.protal.kubernetes.io/type: NatGateway
   labels:
     appgroup: ""
   name: {{servername}}
@@ -31,16 +31,18 @@ spec:
         - name: servername
           value: {{servername}}
         - name: serveraddr
-          value: {{EIP}}:{{port}}
+          value: {{dnatip}}:{{port}}
         - name: mysqluser
           value: root
         - name: mysqlpwd
-          value: Huawei@123
+          value: Cloud@123
         - name: mysqlurl
-          value: 192.168.0.44:3306
+          value: rds.mysql.com:8635
         - name: registerurl
-          value: http://register.default.svc.cluster.local:8087
-        image: 100.125.0.198:20202/cce-demo/gameserver:latest
+          value: http://demomgr.default.svc.cluster.local:8087
+        - name: database
+          value: game
+        image: 100.125.0.198:20202/cce-demo/demotest:latest
         imagePullPolicy: Always
         name: container-0
         resources:
@@ -70,22 +72,41 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    service.protal.kubernetes.io/access-ip: {{EIP}}
-    service.protal.kubernetes.io/type: EIP
-  enable: true
+  name: {{servername}}-nodeport
   labels:
     app: {{servername}}
-  name: {{servername}}
-  namespace: default
+  annotations:
+    service.protal.kubernetes.io/type: NodePort
 spec:
-  externalTrafficPolicy: Cluster
+  selector:
+    app: {{servername}}
   ports:
   - name: service0
+    targetPort: 8088
     nodePort: {{port}}
     port: 8088
     protocol: TCP
-    targetPort: 8088
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{servername}}-nat
+  labels:
+    app: {{servername}}
+  annotations:
+    service.protal.kubernetes.io/type: NatGateway
+    service.protal.kubernetes.io/access-ip: {{dnatip}}:{{port}}
+    kubernetes.io/elb.class: dnat
+    kubernetes.io/natgateway.id: {{dnatid}}
+spec:
   selector:
     app: {{servername}}
-  type: NodePort
+  ports:
+  - name: service0
+    targetPort: 8088
+    nodePort: 0
+    port: {{port}}
+    protocol: TCP
+  type: LoadBalancer
+  loadBalancerIP: {{dnatip}}

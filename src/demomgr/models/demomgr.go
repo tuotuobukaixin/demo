@@ -13,18 +13,22 @@ type DemoTest struct {
 	FileTest    bool   `orm:"default(false)"`
 	FileSize    int    `orm:"size(32)"`
 	TcpTest     bool   `orm:"default(false)"`
-	TcpNum      int    `orm:"size(32)"`
+	DownFile    bool   `orm:"default(false)"`
+	DownFileUrl string `orm:"size(64);null"`
+	DownFileSum string `orm:"size(64);null"`
 }
 
 type DemoTestGet struct {
 	Name        string `json:"name,omitempty"`
 	Status      string `json:"status,omitempty"`
 	ServiceAddr string `json:"addr,omitempty"`
-	Podip   string `json:"podip,omitempty"`
+	Podip       string `json:"podip,omitempty"`
 	FileTest    bool   `json:"filetest,omitempty"`
 	FileSize    int    `json:"filesize,omitempty"`
 	TcpTest     bool   `json:"tcptest,omitempty"`
-	TcpNum      int    `json:"tcpnum,omitempty"`
+	DownFile    bool   `json:"downfile,omitempty"`
+	DownFileUrl string `json:"downfileurl,omitempty"`
+	DownFileSum string `json:"downfilesum,omitempty"`
 }
 
 //AddVms Add a vms record

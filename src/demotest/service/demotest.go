@@ -6,16 +6,17 @@ import (
 	"errors"
 	"fmt"
 
+	"crypto/sha256"
+	rt "demomgr/models"
 	"demotest/models"
 	"demotest/util"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
-	rt "demomgr/models"
+	"strconv"
 	"strings"
 	"time"
-	"strconv"
 )
 
 //ErrorRsp used to struct the error response
@@ -130,14 +131,14 @@ func Readfile() float64 {
 	return float64(size/1024/1024) / cost
 
 }
-func TestTCP(num int) (int, int, string) {
+func TestTCP() (int, int, string) {
 	gss, err := rt.GetDemoTests()
 	if err != nil {
-		return 0, 0,""
+		return 0, 0, ""
 	}
 	total := len(gss)
 	success := 0
-	detail:=""
+	detail := ""
 	for i := 0; i < len(gss); i++ {
 		if gss[i].ServiceAddr != "" {
 
@@ -145,21 +146,62 @@ func TestTCP(num int) (int, int, string) {
 			rsp, status_code, _, err := util.DoHttpRequest("GET", router, "application/json", nil, "", "")
 			if status_code == 200 {
 				success++
-			}else {
-				detail = strconv.Itoa(status_code) + string(rsp) + err.Error()+ ";" + detail
+			} else {
+				detail = strconv.Itoa(status_code) + string(rsp) + err.Error() + ";" + detail
 			}
 			router = fmt.Sprintf("http://%s:8088/api/v1/demotesthealth", gss[i].Podip)
 			rsp, status_code, _, err = util.DoHttpRequest("GET", router, "application/json", nil, "", "")
 			if status_code == 200 {
 				success++
-			}else {
-				detail = strconv.Itoa(status_code) + string(rsp) + err.Error()+ ";" + detail
+			} else {
+				detail = strconv.Itoa(status_code) + string(rsp) + err.Error() + ";" + detail
 			}
 
 		}
 
 	}
 	return success, total * 2, detail
+}
+func DownFile(url string) bool {
+	_ = os.Remove("temp.file")
+	res, err := http.Get(url)
+
+	if err != nil {
+
+		util.LOGGER.Error("Read file failed.", err)
+		return false
+	}
+	f, err := os.Create("temp.file")
+	if err != nil {
+
+		util.LOGGER.Error("Read file failed.", err)
+		return false
+	}
+
+	io.Copy(f, res.Body)
+	return true
+}
+func TestDownFile(url string, sum string) (int, bool) {
+	success := true
+	start := time.Now()
+	DownFile(url)
+	cost := time.Since(start).Seconds()
+	file, err := os.Open("temp.file")
+	if err != nil {
+		util.LOGGER.Error("sha256 check failed", err)
+		return int(cost), false
+	}
+	defer file.Close()
+	hash := sha256.New()
+	io.Copy(hash, file)
+	md := hash.Sum(nil)
+	sha256sum := fmt.Sprintf("%x", md)
+	if sha256sum != sum {
+		util.LOGGER.Error("sha256 check failed", nil)
+		return int(cost), false
+	}
+
+	return int(cost), success
 }
 func Gothread() {
 	for {
@@ -173,12 +215,17 @@ func Gothread() {
 			tmp.FileReadSpeed = int(readspeed)
 		}
 		if gs.TcpTest {
-			success, totol,detail := TestTCP(gs.TcpNum)
+			success, totol, detail := TestTCP()
 			tmp.Total = totol
 			tmp.Success = success
 			tmp.Detail = detail
 		}
-		if gs.FileTest || gs.TcpTest {
+		if gs.DownFile {
+			time, success := TestDownFile(gs.DownFileUrl, gs.DownFileSum)
+			tmp.DownFileTime = time
+			tmp.DownFileSuccess = success
+		}
+		if gs.FileTest || gs.TcpTest || gs.DownFile {
 			tmp.Name = gs.Name
 			tmp.Time = time.Now().String()
 			models.AddDemoTestTestResult(&tmp)
@@ -201,8 +248,9 @@ func WriteFile(results []models.DemoTestTestResult) {
 	defer file.Close()
 
 	for i := 0; i < len(results); i++ {
-		str := fmt.Sprintf("%s,%d,%d,%d/%d,%s,%s\n", results[i].Name, results[i].FileReadSpeed,
-			results[i].FileWriteSpeed, results[i].Success, results[i].Total, results[i].Time, results[i].Detail)
+		str := fmt.Sprintf("%s,%d,%d,%d/%d,%d,%v,%s,%s\n", results[i].Name, results[i].FileReadSpeed,
+			results[i].FileWriteSpeed, results[i].Success, results[i].Total,results[i].DownFileTime,
+			results[i].DownFileSuccess, results[i].Time, results[i].Detail)
 		file.WriteString(str)
 	}
 }
@@ -221,25 +269,10 @@ func GetGameserverDetail(w http.ResponseWriter, r *http.Request) {
 		ErrorResponse(400, errStr, w)
 		return
 	}
-	var rspdemotest []models.DemoTestTestResultGet
-
-	demotests, err := models.GetDemoTestsResult()
-	if err != nil {
-		errStr := "get demotest failed"
-		util.LOGGER.Error(errStr, err)
-		ErrorResponse(500, errStr, w)
-		return
-	}
-	for _, demotest := range demotests {
-
-		var temp models.DemoTestTestResultGet
-		temp.Time = demotest.Time
-		temp.FileReadSpeed = demotest.FileReadSpeed
-		temp.FileWriteSpeed = demotest.FileWriteSpeed
-		temp.Success = demotest.Success
-		temp.Total = demotest.Total
-		rspdemotest = append(rspdemotest, temp)
-	}
+	var rspdemotest models.DemoTestGet
+	rspdemotest.Name = util.Config.ServerName
+	rspdemotest.Dnataddr = util.Config.ServerAddr
+	rspdemotest.PodIP = util.Config.Podip
 
 	data, _ := json.Marshal(&rspdemotest)
 
