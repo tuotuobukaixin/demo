@@ -142,7 +142,7 @@ func TestTCP() (int, int, string) {
 	for i := 0; i < len(gss); i++ {
 		if gss[i].ServiceAddr != "" {
 
-			router := fmt.Sprintf("http://%s.default.svc.cluster.local:8088/api/v1/demotesthealth", gss[i].Name)
+			router := fmt.Sprintf("http://%s-nodeport.default.svc.cluster.local:8088/api/v1/demotesthealth", gss[i].Name)
 			rsp, status_code, _, err := util.DoHttpRequest("GET", router, "application/json", nil, "", "")
 			if status_code == 200 {
 				success++
@@ -221,9 +221,16 @@ func Gothread() {
 			tmp.Detail = detail
 		}
 		if gs.DownFile {
-			time, success := TestDownFile(gs.DownFileUrl, gs.DownFileSum)
-			tmp.DownFileTime = time
-			tmp.DownFileSuccess = success
+			for a := 0; a < 5; a++ {
+				times, success := TestDownFile(gs.DownFileUrl, gs.DownFileSum)
+
+				tmp.DownFileTime = times
+				tmp.DownFileSuccess = success
+				if success == true {
+					break
+				}
+				time.Sleep(30 * time.Second)
+			}
 		}
 		if gs.FileTest || gs.TcpTest || gs.DownFile {
 			tmp.Name = gs.Name

@@ -41,17 +41,17 @@ spec:
         - name: registerurl
           value: http://demomgr.default.svc.cluster.local:8087
         - name: database
-          value: game
+          value: demo19
         image: 100.125.0.198:20202/cce-demo/demotest:latest
         imagePullPolicy: Always
         name: container-0
         resources:
           limits:
             cpu: 300m
-            memory: 100Mi
+            memory: 400Mi
           requests:
             cpu: 300m
-            memory: 100Mi
+            memory: 400Mi
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         volumeMounts:
@@ -105,7 +105,7 @@ spec:
   ports:
   - name: service0
     targetPort: 8088
-    nodePort: 0
+    nodePort: {{port2}}
     port: {{port}}
     protocol: TCP
   type: LoadBalancer

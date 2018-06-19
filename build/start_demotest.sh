@@ -7,7 +7,7 @@ sed -i "s|{{mysqlurl}}|$mysqlurl|g"  $BUILD/app.conf
 sed -i "s|{{servername}}|$servername|g"  $BUILD/app.conf
 sed -i "s|{{registerurl}}|$registerurl|g"  $BUILD/app.conf
 sed -i "s|{{serveraddr}}|$serveraddr|g"  $BUILD/app.conf
-sed -i "s|{{{podip}}|$ip|g"  $BUILD/app.conf
+sed -i "s|{{podip}}|$ip|g"  $BUILD/app.conf
 sed -i "s|{{database}}|$database|g"  $BUILD/app.conf
 chmod 750 $BUILD/demotest
 ps -ef|grep demotest
