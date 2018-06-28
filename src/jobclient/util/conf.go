@@ -8,6 +8,7 @@ import (
 type configuration struct {
 	Num   int
 	Redisserver string
+	Timeout int
 }
 
 // The configuration structure exposed to the others to get the configuration information

@@ -73,7 +73,6 @@ func RegisterGameserver() error {
 	return nil
 }
 func Writefile(size int) float64 {
-	util.LOGGER.Info("begin write file")
 	sb := bytes.Buffer{}
 	for j := 0; j < 8000; j++ {
 		sb.WriteString("test")
@@ -92,13 +91,11 @@ func Writefile(size int) float64 {
 		file.WriteString(str)
 	}
 	cost := time.Since(start).Seconds()
-	util.LOGGER.Info("finish write file")
 	return float64(size) / cost
 
 }
 
 func Readfile() float64 {
-	util.LOGGER.Info("begin read file")
 	start := time.Now()
 	file, err := os.OpenFile("file/"+util.Config.ServerName, os.O_RDWR, 0666)
 	if err != nil {
@@ -127,7 +124,6 @@ func Readfile() float64 {
 		}
 	}
 	cost := time.Since(start).Seconds()
-	util.LOGGER.Info("finish read file")
 	return float64(size/1024/1024) / cost
 
 }
@@ -140,25 +136,20 @@ func TestTCP() (int, int, string) {
 	success := 0
 	detail := ""
 	for i := 0; i < len(gss); i++ {
-		if gss[i].ServiceAddr != "" {
-
-			router := fmt.Sprintf("http://%s-nodeport.default.svc.cluster.local:8088/api/v1/demotesthealth", gss[i].Name)
-			rsp, status_code, _, err := util.DoHttpRequest("GET", router, "application/json", nil, "", "")
-			if status_code == 200 {
-				success++
-			} else {
-				detail = strconv.Itoa(status_code) + string(rsp) + err.Error() + ";" + detail
-			}
-			router = fmt.Sprintf("http://%s:8088/api/v1/demotesthealth", gss[i].Podip)
-			rsp, status_code, _, err = util.DoHttpRequest("GET", router, "application/json", nil, "", "")
-			if status_code == 200 {
-				success++
-			} else {
-				detail = strconv.Itoa(status_code) + string(rsp) + err.Error() + ";" + detail
-			}
-
+		router := fmt.Sprintf("http://%s-nodeport.default.svc.cluster.local:8088/api/v1/demotesthealth", gss[i].Name)
+		rsp, status_code, _, err := util.DoHttpRequest("GET", router, "application/json", nil, "", "")
+		if status_code == 200 {
+			success++
+		} else {
+			detail = strconv.Itoa(status_code) + string(rsp) + err.Error() + ";" + detail
 		}
-
+		router = fmt.Sprintf("http://%s:8088/api/v1/demotesthealth", gss[i].Podip)
+		rsp, status_code, _, err = util.DoHttpRequest("GET", router, "application/json", nil, "", "")
+		if status_code == 200 {
+			success++
+		} else {
+			detail = strconv.Itoa(status_code) + string(rsp) + err.Error() + ";" + detail
+		}
 	}
 	return success, total * 2, detail
 }
@@ -215,9 +206,9 @@ func Gothread() {
 			tmp.FileReadSpeed = int(readspeed)
 		}
 		if gs.TcpTest {
-			success, totol, detail := TestTCP()
+			successnum, totol, detail := TestTCP()
 			tmp.Total = totol
-			tmp.Success = success
+			tmp.Success = successnum
 			tmp.Detail = detail
 		}
 		if gs.DownFile {
@@ -304,3 +295,4 @@ func Health(w http.ResponseWriter, r *http.Request) {
 
 	HttpResponse(200, []byte(""), w)
 }
+

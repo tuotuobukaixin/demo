@@ -39,9 +39,9 @@ spec:
         - name: mysqlurl
           value: rds.mysql.com:8635
         - name: registerurl
-          value: http://demomgr.default.svc.cluster.local:8087
+          value: http://demomgr.default.svc.cluster.local:{{elb1port}}
         - name: database
-          value: demo19
+          value: {{dbname}}
         image: 100.125.0.198:20202/cce-demo/demotest:latest
         imagePullPolicy: Always
         name: container-0

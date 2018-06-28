@@ -14,7 +14,7 @@ type DemoTest struct {
 	FileSize    int    `orm:"size(32)"`
 	TcpTest     bool   `orm:"default(false)"`
 	DownFile    bool   `orm:"default(false)"`
-	DownFileUrl string `orm:"size(64);null"`
+	DownFileUrl string `orm:"size(128);null"`
 	DownFileSum string `orm:"size(64);null"`
 }
 

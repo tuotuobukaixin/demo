@@ -135,7 +135,7 @@ func createjob(urlstring string, sfs_name string, token string, job_name string)
 					"env": [
 						{
 							"name": "redis_url",
-							"value": "192.168.0.27.redis.com."
+							"value": "192.168.0.216"
 						},
 						{
 							"name": "redis_port",
